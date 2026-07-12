@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VitalSense AI — IBM Granite Chronic Disease Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════ AMBIENT BACKGROUND ═══════════════════════════ -->
+<div class="ambient-bg" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="grid-overlay"></div>
+</div>
+
+<!-- ═══════════════════════════ TOP NAVIGATION ═══════════════════════════ -->
+<header class="topnav" role="banner">
+  <div class="brand">
+    <div class="brand-logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="url(#grad1)" stroke-width="1.5"/>
+        <path d="M7 14 Q10 8 14 10 Q18 12 21 14 Q18 18 14 17 Q10 16 7 14Z" fill="url(#grad1)" opacity="0.9"/>
+        <circle cx="14" cy="14" r="3" fill="white" opacity="0.95"/>
+        <defs>
+          <linearGradient id="grad1" x1="0" y1="0" x2="28" y2="28">
+            <stop offset="0%" stop-color="#00d4aa"/>
+            <stop offset="100%" stop-color="#3b82f6"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">VitalSense AI</span>
+      <span class="brand-sub">IBM Granite · Chronic Disease Intelligence</span>
+    </div>
+  </div>
+
+  <nav class="portal-nav" aria-label="Portal navigation">
+    <button class="portal-btn active" id="btn-patient" onclick="switchPortal('patient')" aria-pressed="true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+      Patient
+    </button>
+    <button class="portal-btn" id="btn-provider" onclick="switchPortal('provider')" aria-pressed="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Provider
+    </button>
+    <button class="portal-btn" id="btn-analytics" onclick="switchPortal('analytics')" aria-pressed="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12v4M12 8v8M17 10v6"/></svg>
+      Analytics
+    </button>
+  </nav>
+
+  <div class="nav-controls">
+    <div class="ibm-status-dot" id="ibm-status-dot" title="IBM Granite Status">
+      <span class="dot"></span>
+      <span class="ibm-status-label">Simulator</span>
+    </div>
+    <button class="icon-btn glow-btn" id="notif-bell" onclick="toggleNotifPanel()" title="Alerts" aria-label="Notifications">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="badge" id="notif-badge">0</span>
+    </button>
+    <button class="icon-btn" onclick="openSettings()" title="Settings" aria-label="Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+    <div class="patient-selector-wrap">
+      <select id="patient-selector" onchange="switchPatient(this.value)" aria-label="Select patient">
+        <option value="0">Elena Martinez — Diabetes T2</option>
+        <option value="1">Robert Chen — Hypertension</option>
+        <option value="2">Ama Owusu — Heart Disease</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ NOTIFICATION PANEL ═══════════════════════════ -->
+<aside class="notif-panel glass-panel" id="notif-panel" role="complementary" aria-label="Alerts">
+  <div class="panel-header">
+    <span class="panel-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+      Alerts &amp; Notifications
+    </span>
+    <button class="text-btn" onclick="clearAlerts()">Clear All</button>
+  </div>
+  <ul id="notif-list" role="list"><li class="no-notifs">No active alerts</li></ul>
+</aside>
+
+<!-- ═══════════════════════════ PATIENT PORTAL ═══════════════════════════ -->
+<main id="portal-patient" class="portal active" role="main">
+
+  <!-- ── Patient Hero Banner ── -->
+  <section class="patient-hero" aria-label="Patient overview">
+    <div class="hero-identity">
+      <div class="avatar-ring">
+        <div class="avatar" id="pt-avatar">EM</div>
+      </div>
+      <div class="hero-info">
+        <h1 id="pt-name" class="hero-name">Elena Martinez</h1>
+        <p id="pt-condition" class="hero-condition">Type 2 Diabetes · Age 54 · F</p>
+        <div class="hero-meta" id="hero-meta">
+          <span class="meta-pill" id="hero-physician">Dr. Sandra Patel</span>
+          <span class="meta-pill" id="hero-insurance">BCB-8821-ELM</span>
+          <span class="meta-pill appt" id="hero-appt">Next: 2025-08-15</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-risk">
+      <div class="risk-dial" id="risk-dial">
+        <svg class="dial-svg" viewBox="0 0 80 80">
+          <circle class="dial-track" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="0"/>
+          <circle class="dial-fill" id="dial-fill" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="150"/>
+        </svg>
+        <div class="dial-center">
+          <span class="dial-score" id="pt-risk-score">28</span>
+          <span class="dial-label">Risk</span>
+        </div>
+      </div>
+      <span class="risk-badge" id="pt-risk-badge">Stable</span>
+    </div>
+    <div class="hero-actions">
+      <button class="action-btn emerald" onclick="openLogModal('vitals')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Log Vitals
+      </button>
+      <button class="action-btn amber" onclick="openLogModal('meal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+        Log Meal
+      </button>
+      <button class="action-btn violet" onclick="openLogModal('medication')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.5 20H4a2 2 0 01-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 011.66.9l.82 1.2a2 2 0 001.66.9H20a2 2 0 012 2v3"/><path d="M15.5 17.5l5-5M20.5 17.5l-5-5"/><circle cx="18" cy="15" r="5"/></svg>
+        Medication
+      </button>
+      <button class="action-btn blue" onclick="requestAISummary()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        AI Analysis
+      </button>
+    </div>
+  </section>
+
+  <!-- ── Bento Metrics Grid ── -->
+  <section class="bento-grid" id="metrics-grid" aria-label="Vital signs">
+    <div class="metric-bento" id="mc-glucose">
+      <div class="metric-header">
+        <span class="metric-icon glucose-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 007-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 007 7z"/></svg>
+        </span>
+        <span class="metric-label">Blood Glucose</span>
+        <span class="metric-status" id="ms-glucose">—</span>
+      </div>
+      <div class="metric-value-row">
+        <span class="metric-value" id="mv-glucose">—</span>
+        <span class="metric-unit">mg/dL</span>
+      </div>
+      <div class="metric-sparkline" id="spark-glucose"></div>
+      <div class="metric-trend" id="mt-glucose"></div>
+    </div>
+
+    <div class="metric-bento" id="mc-bp">
+      <div class="metric-header">
+        <span class="metric-icon bp-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </span>
+        <span class="metric-label">Blood Pressure</span>
+        <span class="metric-status" id="ms-bp">—</span>
+      </div>
+      <div class="metric-value-row">
+        <span class="metric-value" id="mv-bp">—</span>
+        <span class="metric-unit">mmHg</span>
+      </div>
+      <div class="metric-sparkline" id="spark-bp"></div>
+      <div class="metric-trend" id="mt-bp"></div>
+    </div>
+
+    <div class="metric-bento" id="mc-hr">
+      <div class="metric-header">
+        <span class="metric-icon hr-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </span>
+        <span class="metric-label">Heart Rate</span>
+        <span class="metric-status" id="ms-hr">—</span>
+      </div>
+      <div class="metric-value-row">
+        <span class="metric-value" id="mv-hr">—</span>
+        <span class="metric-unit">bpm <span class="heart-pulse" id="heart-icon">♥</span></span>
+      </div>
+      <div class="metric-sparkline" id="spark-hr"></div>
+      <div class="metric-trend" id="mt-hr"></div>
+    </div>
+
+    <div class="metric-bento" id="mc-spo2">
+      <div class="metric-header">
+        <span class="metric-icon spo2-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+        </span>
+        <span class="metric-label">SpO₂</span>
+        <span class="metric-status" id="ms-spo2">—</span>
+      </div>
+      <div class="metric-value-row">
+        <span class="metric-value" id="mv-spo2">—</span>
+        <span class="metric-unit">%</span>
+      </div>
+      <div class="spo2-bar-wrap">
+        <div class="spo2-bar"><div class="spo2-fill" id="spo2-fill"></div></div>
+      </div>
+      <div class="metric-trend" id="mt-spo2"></div>
+    </div>
+
+    <div class="metric-bento" id="mc-weight">
+      <div class="metric-header">
+        <span class="metric-icon weight-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a3 3 0 100 6 3 3 0 000-6z"/><path d="M3 21h18l-2-9H5L3 21z"/></svg>
+        </span>
+        <span class="metric-label">Weight</span>
+        <span class="metric-status" id="ms-weight">—</span>
+      </div>
+      <div class="metric-value-row">
+        <span class="metric-value" id="mv-weight">—</span>
+        <span class="metric-unit">kg</span>
+      </div>
+      <div class="metric-sparkline" id="spark-weight"></div>
+      <div class="metric-trend" id="mt-weight"></div>
+    </div>
+  </section>
+
+  <!-- ── Charts + Medication Row ── -->
+  <section class="charts-row">
+    <div class="chart-card glass-card">
+      <div class="card-header">
+        <span class="card-title">Vitals Trend — Last 14 Days</span>
+        <div class="chart-tabs">
+          <button class="ctab active" onclick="switchChart('glucose',this)">Glucose</button>
+          <button class="ctab" onclick="switchChart('bp',this)">BP</button>
+          <button class="ctab" onclick="switchChart('hr',this)">Heart Rate</button>
+          <button class="ctab" onclick="switchChart('weight',this)">Weight</button>
+        </div>
+      </div>
+      <canvas id="vitals-chart" height="100"></canvas>
+    </div>
+    <div class="chart-card glass-card adherence-card">
+      <div class="card-header">
+        <span class="card-title">Medication Adherence</span>
+        <span class="adherence-score">Today: <strong id="adherence-pct">—%</strong></span>
+      </div>
+      <canvas id="med-chart" height="140"></canvas>
+      <div class="adherence-pills" id="adherence-pills"></div>
+    </div>
+  </section>
+
+  <!-- ── Medication Tracker + Recent Logs ── -->
+  <section class="bottom-row">
+    <div class="glass-card med-card">
+      <div class="card-header">
+        <span class="card-title">Today's Medications</span>
+        <span class="muted-label" id="med-today-date"></span>
+      </div>
+      <div id="med-list" class="med-list"></div>
+    </div>
+    <div class="glass-card logs-card">
+      <div class="card-header">
+        <span class="card-title">Recent Activity Log</span>
+        <button class="text-btn" onclick="openLogModal('vitals')">+ Add Entry</button>
+      </div>
+      <div id="recent-logs" class="recent-logs"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════ PROVIDER PORTAL ═══════════════════════════ -->
+<main id="portal-provider" class="portal" role="main">
+
+  <section class="provider-hero glass-card">
+    <div>
+      <h2 class="prov-title">Clinical Overview</h2>
+      <p class="muted-label">AI-triaged patient list · Click any patient for detailed analytics</p>
+    </div>
+    <div class="prov-stats" id="prov-stats">
+      <div class="stat-chip critical-chip"><span id="stat-critical">0</span><small>Critical</small></div>
+      <div class="stat-chip warning-chip"><span id="stat-warning">0</span><small>Warning</small></div>
+      <div class="stat-chip stable-chip"><span id="stat-stable">0</span><small>Stable</small></div>
+    </div>
+  </section>
+
+  <div class="triage-grid" id="triage-cards"></div>
+
+  <div class="provider-detail-grid">
+    <div class="glass-card prov-chart-card" id="provider-detail">
+      <div class="card-header">
+        <h3 id="prov-pt-name" class="card-title">Select a patient from triage →</h3>
+      </div>
+      <canvas id="prov-chart" height="110"></canvas>
+      <div id="prov-log-table"></div>
+    </div>
+    <div class="glass-card targets-card">
+      <div class="card-header">
+        <span class="card-title">Clinical Target Ranges</span>
+        <button class="action-btn emerald sm-btn" onclick="saveTargets()">Save</button>
+      </div>
+      <div id="targets-form" class="targets-form"></div>
+    </div>
+  </div>
+
+  <div class="provider-bottom-row">
+    <div class="glass-card ai-report-card">
+      <div class="card-header">
+        <span class="card-title">IBM Granite — Clinical Report</span>
+        <button class="action-btn blue sm-btn" onclick="generateClinicalSummary()">Generate</button>
+      </div>
+      <div id="clinical-summary-output" class="ai-output muted-label">Click "Generate" to produce an IBM Granite clinical report for the selected patient.</div>
+    </div>
+    <div class="glass-card alarm-card">
+      <div class="card-header">
+        <span class="card-title">Active Alarms</span>
+        <button class="text-btn" onclick="clearAlerts()">Clear All</button>
+      </div>
+      <div id="alarm-dashboard"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════════ ANALYTICS PORTAL ═══════════════════════════ -->
+<main id="portal-analytics" class="portal" role="main">
+  <section class="analytics-hero glass-card">
+    <h2 class="prov-title">Population Analytics</h2>
+    <p class="muted-label">Cross-patient metrics, risk distributions, and trend intelligence</p>
+  </section>
+
+  <div class="analytics-grid">
+    <div class="glass-card analytics-chart-card">
+      <div class="card-header"><span class="card-title">Risk Score Distribution</span></div>
+      <canvas id="analytics-risk-chart" height="180"></canvas>
+    </div>
+    <div class="glass-card analytics-chart-card">
+      <div class="card-header"><span class="card-title">Average Glucose by Patient</span></div>
+      <canvas id="analytics-glucose-chart" height="180"></canvas>
+    </div>
+    <div class="glass-card analytics-chart-card">
+      <div class="card-header"><span class="card-title">Average Systolic BP by Patient</span></div>
+      <canvas id="analytics-bp-chart" height="180"></canvas>
+    </div>
+    <div class="glass-card analytics-stats-card">
+      <div class="card-header"><span class="card-title">Population Summary</span></div>
+      <div id="analytics-summary" class="analytics-summary"></div>
+    </div>
+  </div>
+
+  <div class="glass-card rag-card">
+    <div class="card-header">
+      <span class="card-title">RAG Knowledge Base Status</span>
+      <span class="vector-badge" id="vector-badge">Vector Store Active</span>
+    </div>
+    <div id="rag-status" class="rag-status-grid"></div>
+  </div>
+</main>
+
+<!-- ═══════════════════════════ AI CHAT COMPANION ═══════════════════════════ -->
+<button class="chat-fab" id="chat-fab" onclick="toggleChat()" aria-label="Open AI Chat">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+  </svg>
+  <span class="fab-label">IBM Granite AI</span>
+</button>
+
+<div class="chat-window glass-panel" id="chat-window" role="dialog" aria-label="AI Chat" aria-modal="true">
+  <div class="chat-header">
+    <div class="chat-title-group">
+      <div class="chat-avatar">
+        <svg width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="url(#cg1)" stroke-width="1.5"/><path d="M7 14 Q10 8 14 10 Q18 12 21 14 Q18 18 14 17 Q10 16 7 14Z" fill="url(#cg1)" opacity="0.9"/><circle cx="14" cy="14" r="3" fill="white" opacity="0.95"/><defs><linearGradient id="cg1" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stop-color="#00d4aa"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs></svg>
+      </div>
+      <div>
+        <span class="chat-title">IBM Granite Clinical AI</span>
+        <span class="chat-model-tag" id="chat-model-tag">Simulator</span>
+      </div>
+    </div>
+    <button class="icon-btn sm" onclick="toggleChat()" aria-label="Close chat">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+    <div class="msg ai">
+      <div class="msg-content">Hello! I'm your IBM Granite clinical AI companion. I can analyze your vitals, explain trends, identify risks, and provide evidence-based guidance. How can I help you today?</div>
+    </div>
+  </div>
+  <div class="chat-suggestions" id="chat-suggestions">
+    <button onclick="sendSuggestion('Analyze my glucose trends')">Glucose analysis</button>
+    <button onclick="sendSuggestion('Am I at risk for a cardiac event?')">Cardiac risk</button>
+    <button onclick="sendSuggestion('What dietary changes should I make?')">Diet advice</button>
+    <button onclick="sendSuggestion('Explain my latest blood pressure reading')">Explain BP</button>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="Ask anything about your health…" onkeydown="chatKeydown(event)" autocomplete="off" />
+    <button class="send-btn" onclick="sendChat()" aria-label="Send message">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ LOG MODAL ═══════════════════════════ -->
+<div class="modal-overlay" id="log-modal-overlay" onclick="closeLogModal(event)" role="dialog" aria-modal="true">
+  <div class="modal glass-panel" id="log-modal">
+    <div class="modal-header">
+      <h3 id="log-modal-title" class="modal-title">Log Entry</h3>
+      <button class="icon-btn sm" onclick="closeLogModalDirect()" aria-label="Close">✕</button>
+    </div>
+    <div id="log-modal-body" class="modal-body"></div>
+    <div class="modal-footer">
+      <button class="action-btn emerald" onclick="submitLog()">Submit Entry</button>
+      <button class="action-btn ghost" onclick="closeLogModalDirect()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SETTINGS MODAL ═══════════════════════════ -->
+<div class="modal-overlay" id="settings-overlay" onclick="closeSettings(event)" role="dialog" aria-modal="true">
+  <div class="modal glass-panel wide-modal" id="settings-modal">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        IBM Cloud Integration
+      </h3>
+      <button class="icon-btn sm" onclick="closeSettingsDirect()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body settings-body">
+
+      <div style="background:rgba(255,75,110,0.1);border:1px solid rgba(255,75,110,0.3);border-radius:10px;padding:0.9rem 1.1rem;margin-bottom:0.25rem;">
+        <div style="font-weight:700;color:#ff4b6e;font-size:0.85rem;margin-bottom:6px;">⚠️ IBM Cloud Lite credentials are mandatory</div>
+        <div style="color:#b0bbd0;font-size:0.78rem;line-height:1.6;">
+          This application exclusively uses <strong style="color:#e8edf5">IBM Cloud Lite services</strong>.
+          All AI features require a live <strong style="color:#e8edf5">IBM Granite</strong> connection via watsonx.ai.
+          <strong style="color:#e8edf5">IBM Lite plan is free</strong> — no credit card required.
+          &nbsp;<a href="https://cloud.ibm.com/registration" target="_blank" style="color:#00d4aa;">Sign up →</a>
+          &nbsp;|&nbsp;<a href="https://dataplatform.cloud.ibm.com" target="_blank" style="color:#3b82f6;">Open watsonx.ai →</a>
+          &nbsp;|&nbsp;<a href="SETUP.md" target="_blank" style="color:#a78bfa;">Setup guide →</a>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="settings-section">
+          <h4 class="settings-section-title">Watson ML / watsonx.ai — REQUIRED</h4>
+          <div class="input-group">
+            <label for="cfg-apikey">IBM Cloud API Key <span style="color:#ff4b6e">*</span></label>
+            <input type="password" id="cfg-apikey" placeholder="Paste your IBM Cloud API Key…" autocomplete="off"
+              title="cloud.ibm.com → Manage → Access (IAM) → API keys → Create an IBM Cloud API key" />
+          </div>
+          <div class="input-group">
+            <label for="cfg-url">Watson ML Service URL <span style="color:#ff4b6e">*</span></label>
+            <input type="text" id="cfg-url" placeholder="https://us-south.ml.cloud.ibm.com"
+              title="From your Watson Machine Learning instance page — click the service, copy the URL from credentials" />
+          </div>
+          <div class="input-group">
+            <label for="cfg-project">watsonx.ai Project ID <span style="color:#ff4b6e">*</span></label>
+            <input type="text" id="cfg-project" placeholder="Paste Project ID from dataplatform.cloud.ibm.com…"
+              title="dataplatform.cloud.ibm.com → Your project → Manage → General → Project ID" />
+          </div>
+          <div class="input-group">
+            <label for="cfg-model">IBM Granite Model ID</label>
+            <input type="text" id="cfg-model" placeholder="ibm/granite-3-8b-instruct"
+              title="Recommended Lite tier model: ibm/granite-3-8b-instruct" />
+            <span style="font-size:0.7rem;color:#5a6780;margin-top:3px;display:block">
+              Recommended (Lite): <code style="color:#00d4aa;background:rgba(0,212,170,0.08);padding:1px 5px;border-radius:4px">ibm/granite-3-8b-instruct</code>
+            </span>
+          </div>
+          <div class="toggle-row" title="Automatically enabled when all three required fields are present">
+            <label style="color:#5a6780;font-size:0.78rem">IBM Granite API (auto-enabled with credentials)</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cfg-use-real" onchange="updateApiStatus()" checked/>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4 class="settings-section-title">Watson Discovery Lite — OPTIONAL</h4>
+          <div class="input-group">
+            <label for="cfg-disc-url">Discovery Service URL</label>
+            <input type="text" id="cfg-disc-url" placeholder="https://api.us-south.discovery.watson.cloud.ibm.com" />
+          </div>
+          <div class="input-group">
+            <label for="cfg-disc-key">Discovery API Key</label>
+            <input type="password" id="cfg-disc-key" placeholder="Discovery instance API Key…" />
+          </div>
+          <div class="input-group">
+            <label for="cfg-disc-proj">Discovery Project ID</label>
+            <input type="text" id="cfg-disc-proj" placeholder="Discovery Project ID…" />
+          </div>
+          <div class="toggle-row">
+            <label>Enable Watson Discovery RAG</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cfg-disc-enabled" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <p class="muted-label" style="font-size:0.72rem;margin-top:0.5rem;line-height:1.5">
+            Lite plan: 1 free collection, up to 1,000 documents.<br/>
+            Upload ADA/JNC-8/AHA guideline PDFs for evidence-grounded AI.<br/>
+            Without Discovery, built-in TF-IDF vector store is used instead.
+          </p>
+        </div>
+      </div>
+
+      <div id="api-status" class="api-status error">⚠️ Missing: API Key, Watson ML URL, Project ID. IBM Granite AI features are disabled until all three fields are filled.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn emerald" onclick="saveSettings()">Save &amp; Connect</button>
+      <button class="action-btn blue" onclick="testConnection()">Test IBM Connection</button>
+      <button class="action-btn ghost" onclick="closeSettingsDirect()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ AI SUMMARY MODAL ═══════════════════════════ -->
+<div class="modal-overlay" id="ai-summary-overlay" onclick="closeAiSummary(event)" role="dialog" aria-modal="true">
+  <div class="modal glass-panel wide-modal" id="ai-summary-modal">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="url(#sg1)" stroke-width="1.5"/><path d="M7 14 Q10 8 14 10 Q18 12 21 14 Q18 18 14 17 Q10 16 7 14Z" fill="url(#sg1)" opacity="0.9"/><circle cx="14" cy="14" r="3" fill="white" opacity="0.95"/><defs><linearGradient id="sg1" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stop-color="#00d4aa"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs></svg>
+        IBM Granite — Patient AI Analysis
+      </h3>
+      <button class="icon-btn sm" onclick="closeAiSummaryDirect()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="ai-summary-content" class="ai-output">Generating…</div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn ghost" onclick="closeAiSummaryDirect()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
