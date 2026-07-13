@@ -12,43 +12,43 @@
 ────────────────────────────────────────────────── */
 const SEED_PATIENTS = [
   {
-    id: 0, name: 'Elena Martinez', initials: 'EM', age: 54, sex: 'F',
-    condition: 'Type 2 Diabetes · Age 54 · F', diagnosis: 'type2_diabetes',
-    primaryPhysician: 'Dr. Sandra Patel', insuranceId: 'BCB-8821-ELM', nextAppointment: '2025-08-15',
-    emergencyContact: 'Maria Martinez (daughter) +1-555-0192',
+    id: 0, name: 'Aarav Mehta', initials: 'AM', age: 45, sex: 'M',
+    condition: 'Type 2 Diabetes & Nephropathy · Age 45 · M', diagnosis: 'type2_diabetes',
+    primaryPhysician: 'Dr. Sanjay Gupta', insuranceId: 'AB-PMJAY-9921-AAR', nextAppointment: '2026-08-15',
+    emergencyContact: 'Kavita Mehta (wife) +91-98250-12345',
     medications: [
       { name: 'Metformin 1000mg',  dose: 'Morning with food', time: 'AM' },
-      { name: 'Glipizide 5mg',     dose: 'Before breakfast',  time: 'AM' },
-      { name: 'Lisinopril 10mg',   dose: 'Evening',           time: 'PM' },
+      { name: 'Glimepiride 2mg',     dose: 'Before breakfast',  time: 'AM' },
+      { name: 'Telmisartan 40mg',   dose: 'Evening',           time: 'PM' },
     ],
-    targets: { glucoseMin:70, glucoseMax:140, bpSystolicMax:130, bpDiastolicMax:80, hrMin:60, hrMax:100, spo2Min:95, weightMin:58, weightMax:72 },
+    targets: { glucoseMin:70, glucoseMax:140, bpSystolicMax:130, bpDiastolicMax:80, hrMin:60, hrMax:100, spo2Min:95, weightMin:65, weightMax:80 },
     history: [],
   },
   {
-    id: 1, name: 'Robert Chen', initials: 'RC', age: 61, sex: 'M',
-    condition: 'Hypertension · Age 61 · M', diagnosis: 'hypertension',
-    primaryPhysician: "Dr. James O'Brien", insuranceId: 'UHC-4412-RCH', nextAppointment: '2025-07-28',
-    emergencyContact: 'David Chen (son) +1-555-0341',
+    id: 1, name: 'Priya Sharma', initials: 'PS', age: 58, sex: 'F',
+    condition: 'Hypertension & CAD · Age 58 · F', diagnosis: 'hypertension',
+    primaryPhysician: "Dr. James O'Brien", insuranceId: 'NIA-HYP-4412-PRI', nextAppointment: '2026-07-28',
+    emergencyContact: 'Rahul Sharma (son) +91-98110-54321',
     medications: [
-      { name: 'Amlodipine 10mg',           dose: 'Morning', time: 'AM' },
-      { name: 'Hydrochlorothiazide 25mg',   dose: 'Morning', time: 'AM' },
-      { name: 'Atorvastatin 40mg',          dose: 'Evening', time: 'PM' },
+      { name: 'Amlodipine 5mg',           dose: 'Morning', time: 'AM' },
+      { name: 'Atorvastatin 20mg',   dose: 'Night', time: 'PM' },
+      { name: 'Clopidogrel 75mg',          dose: 'Morning', time: 'AM' },
     ],
-    targets: { glucoseMin:70, glucoseMax:110, bpSystolicMax:125, bpDiastolicMax:80, hrMin:55, hrMax:90, spo2Min:96, weightMin:72, weightMax:88 },
+    targets: { glucoseMin:70, glucoseMax:110, bpSystolicMax:130, bpDiastolicMax:80, hrMin:55, hrMax:90, spo2Min:96, weightMin:55, weightMax:68 },
     history: [],
   },
   {
-    id: 2, name: 'Ama Owusu', initials: 'AO', age: 67, sex: 'F',
-    condition: 'Heart Disease · Age 67 · F', diagnosis: 'heart_disease',
-    primaryPhysician: 'Dr. Priya Sharma', insuranceId: 'AET-7730-AOW', nextAppointment: '2025-08-02',
-    emergencyContact: 'Kwame Owusu (son) +1-555-0477',
+    id: 2, name: 'Dr. Rajesh Iyer', initials: 'RI', age: 66, sex: 'M',
+    condition: 'Heart Failure & COPD · Age 66 · M', diagnosis: 'heart_failure',
+    primaryPhysician: 'Dr. Priya Sharma', insuranceId: 'STAR-HF-7730-RAJ', nextAppointment: '2026-08-02',
+    emergencyContact: 'Vikram Iyer (son) +91-94440-98765',
     medications: [
-      { name: 'Aspirin 81mg',        dose: 'Morning with food', time: 'AM' },
+      { name: 'Aspirin 75mg',        dose: 'Morning with food', time: 'AM' },
       { name: 'Carvedilol 12.5mg',   dose: 'Twice daily',       time: 'AM' },
       { name: 'Furosemide 40mg',     dose: 'Morning',           time: 'AM' },
-      { name: 'Spironolactone 25mg', dose: 'Evening',           time: 'PM' },
+      { name: 'Budesonide Inhaler', dose: 'Twice daily',           time: 'AM' },
     ],
-    targets: { glucoseMin:70, glucoseMax:130, bpSystolicMax:120, bpDiastolicMax:75, hrMin:55, hrMax:85, spo2Min:96, weightMin:60, weightMax:74 },
+    targets: { glucoseMin:70, glucoseMax:130, bpSystolicMax:120, bpDiastolicMax:75, hrMin:55, hrMax:85, spo2Min:92, weightMin:70, weightMax:85 },
     history: [],
   },
 ];
@@ -170,14 +170,13 @@ function generateHistory(diagnosis, days) {
    matching queries to clinical knowledge chunks
 ────────────────────────────────────────────────── */
 const CLINICAL_KNOWLEDGE = [
-  { id: 'ada_glucose', title: 'ADA Glucose Targets', text: 'ADA Standards: Fasting glucose target 80-130 mg/dL. Post-meal <180 mg/dL. HbA1c <7% for most adults. Hypoglycemia defined as glucose <70 mg/dL. Critical hypoglycemia <54 mg/dL. Diabetic ketoacidosis risk above 250 mg/dL with ketones present.' },
-  { id: 'jnc8_bp', title: 'JNC-8 Blood Pressure Guidelines', text: 'JNC-8: BP target <140/90 mmHg for general population. <130/80 mmHg for diabetes or CKD. Stage 1 hypertension: 130-139/80-89. Stage 2: ≥140/90. Hypertensive crisis: >180/120 mmHg — requires immediate treatment. DASH diet reduces BP by 8-14 mmHg.' },
-  { id: 'aha_cardiac', title: 'AHA Cardiac Risk Guidelines', text: 'AHA: Heart rate 60-100 bpm normal. Tachycardia >100 bpm. Bradycardia <60 bpm. SpO2 ≥95% normal. <90% requires supplemental oxygen. Heart failure symptoms: dyspnea, edema, fatigue, weight gain >2kg in 48h. LVEF <40% indicates systolic dysfunction.' },
-  { id: 'diabetes_diet', title: 'Diabetes Nutrition Therapy', text: 'ADA Nutrition: Carbohydrate counting critical for glucose control. Mediterranean or DASH diets recommended. Low glycemic index foods (oats, legumes, non-starchy vegetables). Limit refined carbohydrates, sugary drinks, saturated fats. 150 min/week moderate aerobic exercise improves insulin sensitivity by 30-35%.' },
-  { id: 'htn_lifestyle', title: 'Hypertension Lifestyle Modifications', text: 'Lifestyle: Sodium restriction to 1500-2300 mg/day reduces systolic by 5-6 mmHg. Weight loss 1 mmHg per kg lost. Aerobic exercise 90-150 min/week. DASH diet emphasizes fruits, vegetables, low-fat dairy, whole grains. Limit alcohol to ≤1 drink/day women, ≤2 men. Stop smoking.' },
-  { id: 'heart_failure_mgmt', title: 'Heart Failure Management', text: 'Heart failure: Daily weight monitoring essential — gain >2 kg in 48h indicates fluid retention and needs urgent review. Fluid restriction 1.5-2L/day. Sodium <2g/day. GDMT: ACE inhibitor/ARB/ARNI, beta-blocker, MRA, SGLT2i. Exercise cardiac rehabilitation improves functional capacity and mortality.' },
-  { id: 'medication_adherence', title: 'Medication Adherence Principles', text: 'Adherence: Non-adherence accounts for 50% of treatment failures. Simplify regimen — once-daily dosing improves adherence by 26%. Pill organizers, phone reminders, pharmacy blister packs effective. Never abruptly stop beta-blockers or antihypertensives — can cause rebound hypertension or tachycardia.' },
-  { id: 'spo2_respiratory', title: 'SpO2 and Respiratory Assessment', text: 'Pulse oximetry: SpO2 95-100% normal. 91-94% mild hypoxemia, consider supplemental O2. 86-90% moderate hypoxemia, O2 required. <85% severe, emergency. COPD patients may have chronically lower baseline 88-92%. Factors affecting accuracy: peripheral vasoconstriction, nail polish, motion artifact.' },
+  { id: 'icmr_diabetes_targets', title: 'ICMR Diabetes Guidelines (India)', text: 'ICMR Guidelines: Fasting blood glucose target: 90-130 mg/dL. Post-meal (2hr): <180 mg/dL. HbA1c target: <7.0%. For elderly or those with microvascular complications like diabetic nephropathy, HbA1c <7.5-8.0% is acceptable. Hypoglycemia: <70 mg/dL. Screening for diabetic kidney disease should be done annually with urine albumin-to-creatinine ratio (UACR).' },
+  { id: 'csi_hypertension', title: 'CSI Hypertension Guidelines (India)', text: 'Cardiological Society of India (CSI) Guidelines: Blood pressure target in general population: <140/90 mmHg. Target for diabetics, CAD, or chronic kidney disease (CKD): <130/80 mmHg. Stage 1 hypertension: 130-139/80-89 mmHg. Stage 2: ≥140/90 mmHg. Hypertensive emergency: >180/120 mmHg with target organ damage. South Asians have a 2-3x higher baseline cardiovascular mortality risk, warranting earlier lifestyle and pharmacotherapy interventions.' },
+  { id: 'indian_diet_diabetes', title: 'Indian Dietary Therapy for Diabetes', text: 'Dietary management: Emphasize complex carbohydrates with low glycemic index (e.g., ragi, jowar, bajra, brown rice, whole wheat roti) instead of polished white rice and maida. Increase soluble fiber through dals, pulses, leafy green vegetables, and salads. Restrict high-GI fruits like mango, banana, and sapota. Limit total carbohydrate intake to 50-60% of daily calories.' },
+  { id: 'indian_hypertension_diet', title: 'Hypertension Management & Salt in India', text: 'Dietary salt reduction in India: Average daily salt intake in India is 9-12g; target restriction is <5g/day (approx 1 level teaspoon) to lower systolic BP by 6-8 mmHg. Emphasize DASH-style diet adapted for India: high intake of potassium-rich vegetables (drumstick, spinach, ridge gourd), low-fat curd, pulses, and seeds. Avoid pickles, papads, chutneys, and salted snacks (namkeen).' },
+  { id: 'south_asian_cvd_risk', title: 'South Asian Cardiovascular Susceptibility', text: 'South Asians exhibit high susceptibility to premature atherosclerotic cardiovascular disease (ASCVD). Risk factors include high levels of Lipoprotein(a), visceral adiposity (increased waist circumference at lower BMIs; overweight cutoff is 23 kg/m2 for South Asians instead of 25 kg/m2), high triglycerides, and low HDL cholesterol. Early screening from age 30 is recommended.' },
+  { id: 'heart_failure_in_india', title: 'Heart Failure & COPD in Indian Settings', text: 'Heart failure management: Daily weight monitoring is critical. A sudden weight gain of >2 kg in 48 hours indicates acute fluid overload and requires immediate diuretic (e.g., furosemide) adjustments. Limit daily fluid intake to 1.5-2.0 liters. In patients with concurrent COPD/asthma, non-selective beta-blockers must be avoided; cardio-selective beta-blockers (like metoprolol succinate or nebivolol) or ARNI should be used.' },
+  { id: 'ayushman_bharat_chronic_care', title: 'Ayushman Bharat & Chronic Care Access', text: 'Ayushman Bharat PM-JAY provides financial cover up to ₹5 lakh per family per year for secondary and tertiary care hospitalization in India, covering diabetes complications, cardiovascular surgeries, angioplasty, hemodialysis for CKD, and COPD exacerbations. Health & Wellness Centres (HWCs) provide free essential medicines for hypertension and diabetes.' }
 ];
 
 const VectorStore = (() => {
@@ -234,6 +233,16 @@ const STATE = {
     discoveryUrl: '', discoveryKey: '', discoveryProjectId: '', discoveryEnabled: false,
   },
   medTaken: {},
+  
+  // Advanced Telemetry & Simulation States
+  telemetryMode:      'simulated',
+  telemetryTimer:     null,
+  pollingTimer:       null,
+  
+  // Outcomes Simulator States
+  outcomeSteps:       5000,
+  outcomeSalt:        9,
+  outcomeCarbs:       60,
 };
 
 /* ──────────────────────────────────────────────
@@ -530,6 +539,7 @@ function renderPatientDashboard() {
   renderRecentLogs(p);
   renderVitalsChart('glucose');
   renderMedAdherenceChart(p);
+  updateOutcomesSimulator();
 }
 
 /* ──────────────────────────────────────────────
@@ -1724,6 +1734,508 @@ function dismissIBMOnboardingBanner() {
 }
 
 /* ──────────────────────────────────────────────
+   24A. ADVANCED TELEMETRY & IOT STREAMING
+   ────────────────────────────────────────────────── */
+function initTelemetryStream() {
+  stopTelemetryStreams();
+  
+  if (STATE.telemetryMode === 'simulated') {
+    STATE.telemetryTimer = setInterval(() => {
+      generateAndInjectLocalVital();
+    }, 4000);
+    console.log('[Telemetry] Simulated telemetry active.');
+  } else if (STATE.telemetryMode === 'live') {
+    STATE.pollingTimer = setInterval(() => {
+      fetchLiveVitalsFromServer();
+    }, 4000);
+    console.log('[Telemetry] Live external polling active.');
+  }
+}
+
+function stopTelemetryStreams() {
+  if (STATE.telemetryTimer) {
+    clearInterval(STATE.telemetryTimer);
+    STATE.telemetryTimer = null;
+  }
+  if (STATE.pollingTimer) {
+    clearInterval(STATE.pollingTimer);
+    STATE.pollingTimer = null;
+  }
+}
+
+function generateAndInjectLocalVital() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  const latest = getLatestVitals(p);
+  if (!latest) return;
+  
+  const newVital = {
+    ts: Date.now(),
+    type: 'vitals',
+    glucose: Math.round(latest.glucose + rand(-6, 6)),
+    systolic: Math.round(latest.systolic + rand(-4, 4)),
+    diastolic: Math.round(latest.diastolic + rand(-3, 3)),
+    hr: Math.round(latest.hr + rand(-4, 4)),
+    spo2: parseFloat(Math.min(100, Math.max(85, latest.spo2 + rand(-0.4, 0.4))).toFixed(1)),
+    weight: parseFloat((latest.weight + rand(-0.1, 0.1)).toFixed(1))
+  };
+  
+  // Constrained boundaries
+  newVital.glucose = Math.max(45, Math.min(420, newVital.glucose));
+  newVital.systolic = Math.max(80, Math.min(210, newVital.systolic));
+  newVital.diastolic = Math.max(50, Math.min(125, newVital.diastolic));
+  newVital.hr = Math.max(45, Math.min(160, newVital.hr));
+  newVital.spo2 = Math.max(70, Math.min(100, newVital.spo2));
+  
+  p.history.push(newVital);
+  if (p.history.length > 30) p.history.shift();
+  
+  savePatients();
+  renderPatientDashboard();
+  if (STATE.activePortal === 'provider') selectProviderPatient(STATE.providerPatientIdx);
+  logStreamEvent(`Simulated IoT Pulse: Glucose ${newVital.glucose} mg/dL, BP ${newVital.systolic}/${newVital.diastolic} mmHg, HR ${newVital.hr} bpm`);
+}
+
+async function fetchLiveVitalsFromServer() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  try {
+    const res = await fetch(`/api/live-vitals/${p.id}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const resData = await res.json();
+    if (resData && resData.data) {
+      const liveData = resData.data;
+      const latest = getLatestVitals(p);
+      
+      if (!latest || liveData.ts > latest.ts) {
+        const mergedVital = {
+          ts: liveData.ts,
+          type: 'vitals',
+          glucose: liveData.glucose || (latest ? latest.glucose : 100),
+          systolic: liveData.systolic || (latest ? latest.systolic : 120),
+          diastolic: liveData.diastolic || (latest ? latest.diastolic : 80),
+          hr: liveData.hr || (latest ? latest.hr : 72),
+          spo2: liveData.spo2 || (latest ? latest.spo2 : 98),
+          weight: liveData.weight || (latest ? latest.weight : 70)
+        };
+        p.history.push(mergedVital);
+        if (p.history.length > 30) p.history.shift();
+        
+        savePatients();
+        renderPatientDashboard();
+        if (STATE.activePortal === 'provider') selectProviderPatient(STATE.providerPatientIdx);
+        logStreamEvent(`🔴 Live IoT Signal Received: Glucose ${mergedVital.glucose} mg/dL, BP ${mergedVital.systolic}/${mergedVital.diastolic} mmHg`);
+        showToast(`Live IoT vital signal parsed!`, 'emerald');
+      }
+    }
+  } catch (err) {
+    console.warn('[Telemetry] Poll failed:', err.message);
+  }
+}
+
+function logStreamEvent(msg) {
+  const consoleEl = document.getElementById('telemetry-stream-console');
+  if (!consoleEl) return;
+  const timeStr = new Date().toLocaleTimeString('en-IN', { hour12: false });
+  const logLine = document.createElement('div');
+  logLine.className = 'console-line';
+  logLine.innerHTML = `<span class="console-time">[${timeStr}]</span> <span class="console-msg">${msg}</span>`;
+  consoleEl.appendChild(logLine);
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+  
+  while (consoleEl.children.length > 15) {
+    consoleEl.removeChild(consoleEl.firstChild);
+  }
+}
+
+async function sendSimulatedIoTRequest(glucose, systolic, diastolic, hr, spo2, weight) {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  const payload = {
+    patientId: p.id,
+    glucose: glucose || undefined,
+    systolic: systolic || undefined,
+    diastolic: diastolic || undefined,
+    hr: hr || undefined,
+    spo2: spo2 || undefined,
+    weight: weight || undefined
+  };
+  
+  try {
+    const res = await fetch('/api/live-vitals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      logStreamEvent(`📤 IoT Webhook Triggered for ${p.name}`);
+      showToast('IoT data pushed to webhook endpoint.', 'blue');
+      await fetchLiveVitalsFromServer();
+    } else {
+      showToast('Failed to trigger webhook.', 'coral');
+    }
+  } catch (err) {
+    console.error('[Telemetry] Error pushing IoT:', err);
+    showToast('IoT Server connection failure.', 'coral');
+  }
+}
+
+function changeTelemetryMode(mode) {
+  STATE.telemetryMode = mode;
+  document.querySelectorAll('.tel-mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  
+  const devDeck = document.getElementById('iot-device-deck');
+  if (devDeck) {
+    devDeck.style.display = mode === 'external' ? 'block' : 'none';
+  }
+  
+  initTelemetryStream();
+  showToast(`Telemetry: ${mode.toUpperCase()} mode`, 'blue');
+}
+
+/* ──────────────────────────────────────────────
+   24B. SOUTH ASIAN CVD RISK & OUTCOME SIMULATOR
+   ────────────────────────────────────────────────── */
+function calculateSouthAsianCVDRisk(patient) {
+  const v = getLatestVitals(patient);
+  if (!v) return { score: 10, level: 'Low' };
+  
+  let score = 0;
+  
+  // Accelerated vascular aging in Indian population
+  if (patient.age < 40) score += 8;
+  else if (patient.age < 50) score += 20;
+  else if (patient.age < 60) score += 32;
+  else score += 42;
+  
+  if (patient.sex === 'M') score += 12;
+  
+  // BP score
+  if (v.systolic > 160 || v.diastolic > 100) score += 26;
+  else if (v.systolic > 140 || v.diastolic > 90) score += 18;
+  else if (v.systolic > 130 || v.diastolic > 85) score += 10;
+  
+  // Diabetes is highly atherogenic in South Asians
+  if (patient.diagnosis.includes('diabetes')) {
+    score += 25;
+    if (v.glucose > 180) score += 12;
+  }
+  
+  // Weight & Visceral Adiposity
+  const t = patient.targets;
+  if (v.weight > t.weightMax) {
+    score += 10;
+  }
+  
+  // Lifestyle sliders factors
+  if (STATE.outcomeSteps < 4000) score += 10;
+  else if (STATE.outcomeSteps > 9000) score -= 8;
+  
+  if (STATE.outcomeSalt > 8) score += 8;
+  else if (STATE.outcomeSalt < 5) score -= 5;
+  
+  if (STATE.outcomeCarbs > 60) score += 6;
+  else if (STATE.outcomeCarbs < 45) score -= 5;
+
+  score = Math.max(5, Math.min(95, score));
+  
+  let level = 'Low';
+  if (score > 55) level = 'High';
+  else if (score > 30) level = 'Moderate';
+  
+  return { score, level };
+}
+
+function updateOutcomeParameter(param, value) {
+  STATE[param] = parseFloat(value);
+  
+  if (param === 'outcomeSteps') setEl('lbl-steps', `${value} steps`);
+  if (param === 'outcomeSalt') setEl('lbl-salt', `${value}g`);
+  if (param === 'outcomeCarbs') setEl('lbl-carbs', `${value}%`);
+  
+  updateOutcomesSimulator();
+}
+
+function updateOutcomesSimulator() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  const cvd = calculateSouthAsianCVDRisk(p);
+  
+  // Indian baseline life expectancy: 70 years
+  let baseLife = 70.2;
+  let impact = 0;
+  
+  if (STATE.outcomeSteps >= 10000) impact += 4.2;
+  else if (STATE.outcomeSteps >= 7500) impact += 2.5;
+  else if (STATE.outcomeSteps < 4000) impact -= 3.5;
+  
+  if (STATE.outcomeSalt <= 5) impact += 2.2;
+  else if (STATE.outcomeSalt >= 10) impact -= 2.8;
+  
+  if (STATE.outcomeCarbs <= 45) impact += 1.8;
+  else if (STATE.outcomeCarbs >= 65) impact -= 2.5;
+  
+  const latest = getLatestVitals(p);
+  if (latest) {
+    if (p.diagnosis.includes('diabetes') && latest.glucose > 180) impact -= 4.5;
+    if (latest.systolic > 140) impact -= 3.8;
+    if (latest.spo2 < 93) impact -= 3.0;
+  }
+  
+  const projectedLife = +(baseLife + impact).toFixed(1);
+  
+  // Specific complications progression risk
+  let renalRisk = 12;
+  let strokeRisk = 8;
+  let cardiacRisk = cvd.score;
+  
+  if (latest) {
+    if (p.diagnosis.includes('diabetes')) {
+      renalRisk = latest.glucose > 185 ? 42 : latest.glucose > 140 ? 22 : 10;
+    }
+    strokeRisk = latest.systolic > 160 ? 46 : latest.systolic > 140 ? 25 : 8;
+  }
+  
+  const modifier = (STATE.outcomeSteps / 7000) * (6 / STATE.outcomeSalt) * (55 / STATE.outcomeCarbs);
+  renalRisk = Math.max(5, Math.min(90, Math.round(renalRisk / (modifier * 0.8))));
+  strokeRisk = Math.max(5, Math.min(90, Math.round(strokeRisk / (modifier * 0.9))));
+  
+  setEl('outcomes-cvd-risk', `${cvd.score}% (${cvd.level})`);
+  setEl('outcomes-life-expectancy', `${projectedLife} years`);
+  
+  const leDiffEl = document.getElementById('outcomes-life-diff');
+  if (leDiffEl) {
+    if (impact >= 0) {
+      leDiffEl.textContent = `(+${impact.toFixed(1)} yrs vs regional average)`;
+      leDiffEl.className = 'outcomes-diff positive';
+    } else {
+      leDiffEl.textContent = `(${impact.toFixed(1)} yrs vs regional average)`;
+      leDiffEl.className = 'outcomes-diff negative';
+    }
+  }
+  
+  setEl('prog-renal', `${renalRisk}%`);
+  const renalBar = document.getElementById('prog-bar-renal');
+  if (renalBar) {
+    renalBar.style.width = `${renalRisk}%`;
+    renalBar.className = `progress-fill ${renalRisk > 35 ? 'critical' : renalRisk > 18 ? 'warning' : 'stable'}`;
+  }
+  
+  setEl('prog-stroke', `${strokeRisk}%`);
+  const strokeBar = document.getElementById('prog-bar-stroke');
+  if (strokeBar) {
+    strokeBar.style.width = `${strokeRisk}%`;
+    strokeBar.className = `progress-fill ${strokeRisk > 35 ? 'critical' : strokeRisk > 18 ? 'warning' : 'stable'}`;
+  }
+  
+  setEl('prog-cardiac', `${cardiacRisk}%`);
+  const cardiacBar = document.getElementById('prog-bar-cardiac');
+  if (cardiacBar) {
+    cardiacBar.style.width = `${cardiacRisk}%`;
+    cardiacBar.className = `progress-fill ${cardiacRisk > 35 ? 'critical' : cardiacRisk > 18 ? 'warning' : 'stable'}`;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   24C. DATA-VISUALIZED PDF DOSSIER EXPORT
+   ────────────────────────────────────────────────── */
+async function exportClinicalPDF() {
+  const { jsPDF } = window.jspdf;
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  const v = getLatestVitals(p);
+  const analysis = evaluateAndAlert(p);
+  const cvd = calculateSouthAsianCVDRisk(p);
+  
+  showToast('Compiling Visual PDF Report...', 'blue');
+  
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const primaryColor = [8, 13, 24]; // Dark Navy
+  const textColor = [45, 55, 72];
+  const margin = 20;
+  let y = 40;
+  
+  // Header Banner
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 0, 210, 32, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text('VitalSense AI', margin, 14);
+  
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(160, 174, 192);
+  doc.text('RAG Chronic Disease Management Platform (Indian Context)', margin, 20);
+  doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`, 140, 14);
+  
+  // Patient Info Card
+  doc.setFillColor(247, 250, 252);
+  doc.roundedRect(margin, y, 170, 34, 2, 2, 'F');
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(margin, y, 170, 34, 2, 2, 'S');
+  
+  doc.setTextColor(8, 13, 24);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('PATIENT DOSSIER', margin + 6, y + 8);
+  
+  doc.setTextColor(...textColor);
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9.5);
+  
+  doc.text(`Patient Name: ${p.name}`, margin + 6, y + 16);
+  doc.text(`Age / Sex: ${p.age} years / ${p.sex}`, margin + 6, y + 23);
+  doc.text(`Condition: ${p.condition}`, margin + 6, y + 30);
+  
+  doc.text(`Primary Physician: ${p.primaryPhysician || 'N/A'}`, margin + 90, y + 16);
+  doc.text(`Insurance Account: ${p.insuranceId || 'N/A'}`, margin + 90, y + 23);
+  doc.text(`Next Outpatient Appointment: ${p.nextAppointment || 'N/A'}`, margin + 90, y + 30);
+  
+  y += 42;
+  
+  // Risk & Outcomes Panel
+  doc.setFillColor(254, 242, 242); // Coral tint
+  doc.roundedRect(margin, y, 82, 34, 2, 2, 'F');
+  doc.setTextColor(153, 27, 27);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10.5);
+  doc.text('CLINICAL RISK INDICES', margin + 6, y + 7);
+  doc.setTextColor(...textColor);
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`AI Aggregated Risk: ${analysis.risk}/100 (${analysis.level.toUpperCase()})`, margin + 6, y + 15);
+  doc.text(`10-Yr Cardiovascular Risk: ${cvd.score}%`, margin + 6, y + 22);
+  doc.text(`Active Alerts Count: ${analysis.flags.length}`, margin + 6, y + 29);
+  
+  doc.setFillColor(240, 253, 250); // Teal tint
+  doc.roundedRect(margin + 88, y, 82, 34, 2, 2, 'F');
+  doc.setTextColor(15, 118, 110);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10.5);
+  doc.text('PROJECTED PROGNOSIS & OUTCOMES', margin + 94, y + 7);
+  doc.setTextColor(...textColor);
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Life Expectancy: ${document.getElementById('outcomes-life-expectancy')?.textContent || '70.2 years'}`, margin + 94, y + 15);
+  doc.text(`Daily Steps Target: ${STATE.outcomeSteps} steps/day`, margin + 94, y + 22);
+  doc.text(`Daily Salt Target: ${STATE.outcomeSalt}g/day (ICMR <5g)`, margin + 94, y + 29);
+  
+  y += 42;
+  
+  // Chart Visual
+  doc.setTextColor(8, 13, 24);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('LONGITUDINAL TREND CHART (LAST 14 DAYS)', margin, y);
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y + 2, margin + 170, y + 2);
+  
+  y += 7;
+  
+  try {
+    const chartCanvas = document.getElementById('vitals-chart');
+    if (chartCanvas) {
+      const img = chartCanvas.toDataURL('image/jpeg', 1.0);
+      doc.addImage(img, 'JPEG', margin, y, 170, 52);
+      y += 58;
+    }
+  } catch (err) {
+    console.warn('[PDF] Chart rendering omitted:', err);
+    y += 10;
+  }
+  
+  // RAG & Recommendations Section
+  doc.setTextColor(8, 13, 24);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('IBM GRANITE AI ANALYSIS & RAG CLINICAL RECOMMENDATIONS', margin, y);
+  doc.line(margin, y + 2, margin + 170, y + 2);
+  
+  y += 7;
+  
+  doc.setTextColor(...textColor);
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8.5);
+  
+  let recs = document.getElementById('clinical-summary-output')?.innerText || '';
+  if (!recs || recs.includes('Click "Generate"')) {
+    recs = `📚 Local Clinical Guidelines:\n${VectorStore.search(p.condition, 2).join('\n')}\n\n💡 Personalized Care Directives:\n${graniteRecommendations(p, analysis)}`;
+  }
+  
+  const splitLines = doc.splitTextToSize(recs, 170);
+  
+  // Check height constraint
+  const textHeight = splitLines.length * 3.5;
+  if (y + textHeight > 270) {
+    doc.text(splitLines.slice(0, 40), margin, y);
+    doc.addPage();
+    y = 25;
+    doc.text(splitLines.slice(40), margin, y);
+    y += (splitLines.length - 40) * 3.5 + 10;
+  } else {
+    doc.text(splitLines, margin, y);
+    y += textHeight + 10;
+  }
+  
+  // Draw Vitals Table
+  doc.setTextColor(8, 13, 24);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('RECENT VITALS TELEMETRY PACKETS', margin, y);
+  doc.line(margin, y + 2, margin + 170, y + 2);
+  
+  y += 7;
+  
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, y, 170, 7, 'F');
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('Timestamp', margin + 3, y + 5);
+  doc.text('Glucose (mg/dL)', margin + 45, y + 5);
+  doc.text('BP (mmHg)', margin + 78, y + 5);
+  doc.text('Heart Rate (bpm)', margin + 115, y + 5);
+  doc.text('SpO2 (%)', margin + 148, y + 5);
+  
+  y += 7;
+  
+  doc.setFont('Helvetica', 'normal');
+  const vHistory = p.history.filter(h => h.type === 'vitals').reverse().slice(0, 8);
+  vHistory.forEach((h, index) => {
+    if (index % 2 === 1) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(margin, y, 170, 6, 'F');
+    }
+    const tStr = new Date(h.ts).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+    doc.text(tStr, margin + 3, y + 4.5);
+    doc.text(`${h.glucose} mg/dL`, margin + 45, y + 4.5);
+    doc.text(`${h.systolic}/${h.diastolic} mmHg`, margin + 78, y + 4.5);
+    doc.text(`${h.hr} bpm`, margin + 115, y + 4.5);
+    doc.text(`${h.spo2}%`, margin + 148, y + 4.5);
+    y += 6;
+  });
+  
+  // Footer
+  doc.setFont('Helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(160, 174, 192);
+  doc.text('VitalSense AI demonstration report. Not to be used as a certified medical diagnostic sheet.', margin, 287);
+  
+  doc.save(`${p.name.replace(/\s+/g, '_')}_Health_Report.pdf`);
+  showToast('Clinical PDF dossier downloaded!', 'emerald');
+}
+
+/* ──────────────────────────────────────────────
+   24D. INITIALIZATION OVERRIDES
+   ────────────────────────────────────────────────── */
+
+
+/* ──────────────────────────────────────────────
    25. INIT
 ────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1749,6 +2261,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderNotifications();
   renderAlarmDashboard();
   updateIBMStatusDot();
+  initTelemetryStream();
+  updateOutcomesSimulator();
 
   setEl('med-today-date', new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }));
 

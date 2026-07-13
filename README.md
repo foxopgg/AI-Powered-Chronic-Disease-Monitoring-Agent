@@ -1,21 +1,33 @@
-# CareIQ — AI-Powered Chronic Disease Monitoring Agent
+# VitalSense AI — RAG-Powered Indian Chronic Disease Monitoring Platform
 
-> An intelligent web application simulating a clinical AI agent for chronic disease monitoring, powered by a high-fidelity **IBM Granite Clinical AI Simulator** with optional real IBM Watson ML / Granite API integration.
+> **Live Deployment:** [https://ai-powered-chronic-disease-monitoring.onrender.com/](https://ai-powered-chronic-disease-monitoring.onrender.com/)
+>
+> An advanced RAG-powered clinical intelligence platform tailored for Indian demographics, featuring real-time IoT vital signs streaming, a VenturePilot-style dark glassmorphism dashboard, dynamic lifestyle outcome projections, and data-visualized clinical PDF downloads. Powered by **IBM Granite Clinical AI** (via watsonx.ai) and localized health guidelines.
 
 ---
 
-## Quick Start
+## Quick Start (Local & Server)
 
-1. **Clone or download** this repository.
-2. **Open `index.html`** in any modern browser (Chrome, Firefox, Edge, Safari).
-3. No build step, no server, no dependencies to install — everything runs locally.
+### Run Server Locally:
+1. Ensure you have Node.js (version 18+) installed.
+2. Run `npm install` to download dependencies.
+3. Start the server:
+   ```bash
+   npm start
+   ```
+4. Open your browser to `http://localhost:3000`.
 
+### Key Directories:
 ```
-chronic-care-agent/
-├── index.html   ← Entry point (open this in your browser)
-├── style.css    ← Dark-mode glassmorphism design system
-├── app.js       ← Application logic + IBM Granite AI simulator
-└── README.md    ← This file
+vitalsense-ai/
+├── public/
+│   ├── index.html   ← Redesigned VenturePilot dashboard
+│   ├── app.js        ← Core application logic, RAG engine, outcomes simulator, PDF exporter
+│   ├── style.css     ← Sleek glassmorphism dark-mode styles & glow effects
+│   ├── config.js     ← IBM Cloud & telemetry threshold configuration
+│   └── patients.csv  ← Local database of Indian patient profiles
+├── server.js         ← Express server with Live IoT webhook routes
+└── README.md         ← This file
 ```
 
 ---
@@ -106,15 +118,27 @@ The application ships with a **deterministic clinical reasoning engine** (`grani
 
 ---
 
-## Simulated Patients
+## Simulated Patients (Indian Context)
 
-| Patient | Condition | Pre-loaded scenario |
+| Patient | Condition | Pre-loaded Scenario / Diagnostics |
 |---|---|---|
-| **Elena Martinez** | Type 2 Diabetes | Fluctuating glucose 95–230 mg/dL, mildly elevated BP |
-| **Robert Chen** | Hypertension | Consistently elevated systolic 138–175 mmHg |
-| **Ama Owusu** | Heart Disease | Variable HR, borderline SpO₂, weight monitoring |
+| **Aarav Mehta** | Type 2 Diabetes | Fluctuating glucose 95–230 mg/dL, diabetic nephropathy (CKD risk) |
+| **Priya Sharma** | Hypertension | Consistently elevated systolic 138–175 mmHg, coronary artery disease risk |
+| **Dr. Rajesh Iyer** | Chronic Heart Failure | Left Ventricular Dysfunction, COPD symptoms, SpO₂ monitoring (90–95%) |
+| **Sunita Rao** | Metabolic Syndrome | Elevated BMI, insulin resistance, dyslipidemia |
+| **Amit Patel** | Early-Onset Hypertension | Stress-induced palpitations, work-lifestyle tracking |
 
-All patients have **14 days of realistic seed data** generated on first load, then persisted to `localStorage`.
+All patients have **14 days of realistic seed data** generated on first load, then persisted to `localStorage` (or Cloudant if configured).
+
+---
+
+## Advanced Features
+
+1. **RAG Clinical Guidelines Agent**: Uses local TF-IDF vector database containing Indian-specific medical guidelines (ICMR guidelines for diabetes, CSI guidelines for hypertension, API recommendations, and customized Indian diet plans with ragi, millets, local spices).
+2. **IoT Live Telemetry Stream**: Connects to memory telemetry streams. Includes a live dashboard control panel where you can slide patient vitals and send "IoT pulses" directly via backend POST APIs to update charts instantly.
+3. **Cardiovascular Risk Prediction**: Incorporates a 10-year CVD risk calculator calibrated for South Asian risk profiles.
+4. **Clinical Outcome Prognosis**: Dynamic sliders showing patients how changes in physical activity, sodium reduction, or carbohydrate limits affect life expectancy and long-term organ complications.
+5. **Data-Visualized PDF Exporter**: Renders structured multi-page clinical reports complete with embedded charts, history logs, risk assessments, and RAG guidelines.
 
 ---
 
@@ -122,15 +146,16 @@ All patients have **14 days of realistic seed data** generated on first load, th
 
 | Layer | Technology |
 |---|---|
-| UI | HTML5 Semantic, Vanilla CSS (custom properties, grid, flex) |
-| Logic | Vanilla ES6 JavaScript (no framework, no build step) |
+| UI / Design | HTML5 Semantic, Vanilla CSS (glowing card borders, glassmorphism, responsive grid) |
+| Logic | Vanilla ES6 JavaScript (no framework overhead, zero-build SPA) |
 | Charts | [Chart.js 4.4](https://www.chartjs.org/) via CDN |
-| Fonts | [Outfit](https://fonts.google.com/specimen/Outfit) via Google Fonts |
-| Storage | `localStorage` (client-side persistence) |
-| AI | IBM Granite Simulator (built-in) / IBM Watson ML (optional) |
+| Export | [jsPDF 2.5.1](https://github.com/parallax/jsPDF) & [html2canvas 1.4.1](https://html2canvas.hertzen.com/) via CDN |
+| Fonts | [Inter](https://fonts.google.com/specimen/Inter) & [Outfit](https://fonts.google.com/specimen/Outfit) via Google Fonts |
+| Storage | `localStorage` / optional IBM Cloudant NoSQL database |
+| AI / RAG | IBM Granite via watsonx.ai (live API proxy via Express / Simulator fallback) |
 
 ---
 
 ## License
 
-MIT — free to use, modify, and distribute. Not intended as a substitute for professional medical advice.
+MIT — free to use, modify, and distribute. Developed as a demonstration of RAG clinical intelligence and IoT telemetry on IBM Granite. Not intended for actual medical diagnosis.

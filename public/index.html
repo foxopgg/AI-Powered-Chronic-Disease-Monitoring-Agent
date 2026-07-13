@@ -8,6 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="config.js"></script>
 </head>
 <body>
@@ -71,9 +73,9 @@
     </button>
     <div class="patient-selector-wrap">
       <select id="patient-selector" onchange="switchPatient(this.value)" aria-label="Select patient">
-        <option value="0">Elena Martinez — Diabetes T2</option>
-        <option value="1">Robert Chen — Hypertension</option>
-        <option value="2">Ama Owusu — Heart Disease</option>
+        <option value="0">Aarav Mehta — Diabetes &amp; Nephropathy</option>
+        <option value="1">Priya Sharma — Hypertension &amp; CAD</option>
+        <option value="2">Dr. Rajesh Iyer — Heart Failure &amp; COPD</option>
       </select>
     </div>
   </div>
@@ -139,6 +141,10 @@
       <button class="action-btn blue" onclick="requestAISummary()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
         AI Analysis
+      </button>
+      <button class="action-btn violet" onclick="exportClinicalPDF()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export PDF
       </button>
     </div>
   </section>
@@ -249,6 +255,124 @@
       </div>
       <canvas id="med-chart" height="140"></canvas>
       <div class="adherence-pills" id="adherence-pills"></div>
+    </div>
+  </section>
+
+  <!-- ── IoT Telemetry & Lifestyle Prognosis Outcomes Simulator Row ── -->
+  <section class="telemetry-outcomes-row">
+    <!-- IoT Telemetry Console -->
+    <div class="glass-card telemetry-card">
+      <div class="card-header">
+        <span class="card-title">IoT Telemetry Streaming Hub</span>
+        <div class="telemetry-controls">
+          <button class="tel-mode-btn active tel-mode-simulated" data-mode="simulated" onclick="changeTelemetryMode('simulated')">Simulated</button>
+          <button class="tel-mode-btn tel-mode-live" data-mode="live" onclick="changeTelemetryMode('live')">Live Outpatient</button>
+          <button class="tel-mode-btn tel-mode-external" data-mode="external" onclick="changeTelemetryMode('external')">External IoT Deck</button>
+        </div>
+      </div>
+      <div class="telemetry-console-wrap">
+        <div class="telemetry-console-header">Real-Time Packet Stream Logs</div>
+        <div id="telemetry-stream-console" class="telemetry-console">
+          <div class="console-line"><span class="console-time">[00:00:00]</span> <span class="console-msg">Telemetry system active. Stream listening on /api/live-vitals...</span></div>
+        </div>
+      </div>
+      <!-- IoT Trigger Console Deck -->
+      <div id="iot-device-deck" class="iot-device-deck" style="display: none;">
+        <div class="deck-header">Trigger IoT Signal Payload (POST Webhook Simulator)</div>
+        <div class="deck-inputs">
+          <div class="deck-input-col">
+            <label>Glucose (mg/dL)</label>
+            <input type="number" id="deck-gluc" value="130" />
+          </div>
+          <div class="deck-input-col">
+            <label>BP Systolic (mmHg)</label>
+            <input type="number" id="deck-sys" value="125" />
+          </div>
+          <div class="deck-input-col">
+            <label>BP Diastolic (mmHg)</label>
+            <input type="number" id="deck-dia" value="82" />
+          </div>
+          <div class="deck-input-col">
+            <label>Heart Rate (bpm)</label>
+            <input type="number" id="deck-hr" value="72" />
+          </div>
+          <div class="deck-input-col">
+            <label>SpO₂ (%)</label>
+            <input type="number" step="0.1" id="deck-spo2" value="98.5" />
+          </div>
+          <div class="deck-input-col">
+            <label>Weight (kg)</label>
+            <input type="number" step="0.1" id="deck-weight" value="72.0" />
+          </div>
+        </div>
+        <button class="action-btn emerald sm-btn" onclick="sendSimulatedIoTRequest(
+          parseFloat(document.getElementById('deck-gluc').value),
+          parseFloat(document.getElementById('deck-sys').value),
+          parseFloat(document.getElementById('deck-dia').value),
+          parseFloat(document.getElementById('deck-hr').value),
+          parseFloat(document.getElementById('deck-spo2').value),
+          parseFloat(document.getElementById('deck-weight').value)
+        )">Simulate IoT Event</button>
+      </div>
+    </div>
+
+    <!-- Lifestyle Outcomes Simulator -->
+    <div class="glass-card outcomes-card">
+      <div class="card-header">
+        <span class="card-title">Lifestyle Outcome Prognosis Simulator</span>
+        <span class="vector-badge" id="outcomes-life-expectancy">70.2 years</span>
+      </div>
+      
+      <div class="outcomes-metrics">
+        <div class="outcomes-metric-row">
+          <span class="outcomes-label">South Asian 10-Yr Cardiovascular Risk:</span>
+          <span class="outcomes-value" id="outcomes-cvd-risk">12% (Low)</span>
+        </div>
+        <div class="outcomes-metric-row">
+          <span class="outcomes-label">Projected Longevity Shift:</span>
+          <span id="outcomes-life-diff" class="outcomes-diff positive">(+0.0 yrs vs regional average)</span>
+        </div>
+      </div>
+
+      <div class="sliders-deck">
+        <div class="slider-row">
+          <div class="slider-label-group">
+            <label>Daily Activity Steps</label>
+            <span class="slider-val" id="lbl-steps">5000 steps</span>
+          </div>
+          <input type="range" class="outcome-slider" min="1000" max="15000" step="500" value="5000" oninput="updateOutcomeParameter('outcomeSteps', this.value)" />
+        </div>
+        <div class="slider-row">
+          <div class="slider-label-group">
+            <label>Dietary Salt Intake (g/day)</label>
+            <span class="slider-val" id="lbl-salt">9g</span>
+          </div>
+          <input type="range" class="outcome-slider" min="2" max="15" step="0.5" value="9" oninput="updateOutcomeParameter('outcomeSalt', this.value)" />
+        </div>
+        <div class="slider-row">
+          <div class="slider-label-group">
+            <label>Dietary Carbohydrates %</label>
+            <span class="slider-val" id="lbl-carbs">60%</span>
+          </div>
+          <input type="range" class="outcome-slider" min="30" max="80" step="1" value="60" oninput="updateOutcomeParameter('outcomeCarbs', this.value)" />
+        </div>
+      </div>
+
+      <div class="progression-metrics">
+        <div class="prog-heading">Predicted Organ Complication Incidence Rate</div>
+        <div class="prog-metric">
+          <div class="prog-metric-meta"><span>Diabetic Nephropathy / CKD</span><span id="prog-renal">15%</span></div>
+          <div class="prog-bar-container"><div class="progress-fill" id="prog-bar-renal" style="width: 15%"></div></div>
+        </div>
+        <div class="prog-metric">
+          <div class="prog-metric-meta"><span>Ischemic Stroke Risk</span><span id="prog-stroke">12%</span></div>
+          <div class="prog-bar-container"><div class="progress-fill" id="prog-bar-stroke" style="width: 12%"></div></div>
+        </div>
+        <div class="prog-metric">
+          <div class="prog-metric-meta"><span>Coronary CAD Event</span><span id="prog-cardiac">20%</span></div>
+          <div class="prog-bar-container"><div class="progress-fill" id="prog-bar-cardiac" style="width: 20%"></div></div>
+        </div>
+      </div>
     </div>
   </section>
 

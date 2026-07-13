@@ -159,6 +159,54 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// In-memory store for live IoT telemetry streams
+let liveTelemetry = {};
+
+/**
+ * Endpoint: POST /api/live-vitals
+ * Receives vital readings from external IoT sensors or the simulation deck.
+ */
+app.post('/api/live-vitals', (req, res) => {
+  try {
+    const { patientId, glucose, systolic, diastolic, hr, spo2, weight } = req.body;
+    if (patientId === undefined) {
+      return res.status(400).json({ error: 'patientId is required' });
+    }
+    const pid = parseInt(patientId);
+    
+    // Store vital reading with current timestamp
+    liveTelemetry[pid] = {
+      ts: Date.now(),
+      glucose: glucose !== undefined && glucose !== '' ? parseFloat(glucose) : null,
+      systolic: systolic !== undefined && systolic !== '' ? parseFloat(systolic) : null,
+      diastolic: diastolic !== undefined && diastolic !== '' ? parseFloat(diastolic) : null,
+      hr: hr !== undefined && hr !== '' ? parseFloat(hr) : null,
+      spo2: spo2 !== undefined && spo2 !== '' ? parseFloat(spo2) : null,
+      weight: weight !== undefined && weight !== '' ? parseFloat(weight) : null,
+    };
+    
+    res.json({ success: true, data: liveTelemetry[pid] });
+  } catch (error) {
+    console.error('Error in POST /api/live-vitals:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Endpoint: GET /api/live-vitals/:patientId
+ * Retrieves the latest streamed vital reading for a patient.
+ */
+app.get('/api/live-vitals/:patientId', (req, res) => {
+  try {
+    const pid = parseInt(req.params.patientId);
+    const data = liveTelemetry[pid] || null;
+    res.json({ data });
+  } catch (error) {
+    console.error('Error in GET /api/live-vitals/:patientId:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Fallback for SPA routing or index.html serving
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
