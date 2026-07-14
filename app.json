@@ -1,0 +1,67 @@
+{
+  "name": "VitalSense AI",
+  "description": "AI-Powered Chronic Disease Monitoring Platform integrating IBM watsonx.ai Studio and IBM Cloud Object Storage.",
+  "repository": "https://github.com/foxopgg/AI-Powered-Chronic-Disease-Monitoring-Agent",
+  "logo": "",
+  "keywords": [
+    "node",
+    "express",
+    "ibm-cloud",
+    "watsonx",
+    "object-storage",
+    "healthcare",
+    "ai"
+  ],
+  "env": {
+    "IBM_API_KEY": {
+      "description": "IBM Cloud IAM API Key for watsonx.ai and COS.",
+      "required": true
+    },
+    "WATSONX_PROJECT_ID": {
+      "description": "watsonx.ai Studio Project ID.",
+      "required": true
+    },
+    "WATSON_ML_URL": {
+      "description": "Watson Machine Learning service URL (e.g. https://eu-gb.ml.cloud.ibm.com).",
+      "required": true,
+      "value": "https://eu-gb.ml.cloud.ibm.com"
+    },
+    "IBM_MODEL_ID": {
+      "description": "LLM Model ID to use in watsonx.ai Studio.",
+      "required": false,
+      "value": "meta-llama/llama-3-8b-instruct"
+    },
+    "COS_ENDPOINT": {
+      "description": "IBM Cloud Object Storage endpoint (e.g. s3.eu-gb.cloud-object-storage.appdomain.cloud).",
+      "required": false,
+      "value": "s3.eu-gb.cloud-object-storage.appdomain.cloud"
+    },
+    "COS_BUCKET": {
+      "description": "IBM Cloud Object Storage bucket name.",
+      "required": false,
+      "value": "vitalsenseai-donotdelete-pr-1vtbkqj2koml6h"
+    },
+    "COS_INSTANCE_ID": {
+      "description": "IBM Cloud Object Storage instance CRN (resource instance ID).",
+      "required": false,
+      "value": "crn:v1:bluemix:public:cloud-object-storage:global:a/1dde7ce371ba4ac595d206c78ec7376e:99771c89-2157-4055-acaf-17a1e5dda4aa::"
+    },
+    "PORT": {
+      "description": "Local server port.",
+      "required": false,
+      "value": "3000"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "addons": [],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
