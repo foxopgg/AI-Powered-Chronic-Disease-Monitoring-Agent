@@ -1,7 +1,46 @@
-const apiKey = '5aBebNbNmb8Wx1Ni2gJ6QuRI9r3sxylMX94pf0dCI6w1';
-const svcUrl = 'https://eu-gb.ml.cloud.ibm.com';
-const projId = '95d58bf3-06bb-46cd-83b0-97ffd9eb2a34';
-const model = 'meta-llama/llama-3-8b-instruct';
+const fs = require('fs');
+const path = require('path');
+
+const envPath = 'c:\\Users\\USER\\Documents\\GitHub\\AI-Powered-Chronic-Disease-Monitoring-Agent\\.env';
+console.log(`Reading .env from: ${envPath}`);
+
+let apiKey = '';
+let svcUrl = '';
+let projId = '';
+let model = '';
+
+try {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const lines = envContent.split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const parts = trimmed.split('=');
+    if (parts.length >= 2) {
+      const key = parts[0].trim();
+      const val = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+      if (key === 'IBM_API_KEY' || key === 'IBM_CLOUD_API_KEY') apiKey = val;
+      if (key === 'WATSON_ML_URL') svcUrl = val.replace(/\/$/, '');
+      if (key === 'WATSONX_PROJECT_ID') projId = val;
+      if (key === 'IBM_MODEL_ID') model = val;
+    }
+  }
+} catch (e) {
+  console.error(`Failed to read .env: ${e.message}`);
+  process.exit(1);
+}
+
+if (!apiKey || !svcUrl || !projId) {
+  console.error('Error: Missing required keys in .env');
+  process.exit(1);
+}
+
+model = model || 'meta-llama/llama-3-8b-instruct';
+
+console.log(`API Key: ${apiKey.slice(0, 5)}...${apiKey.slice(-5)}`);
+console.log(`Service URL: ${svcUrl}`);
+console.log(`Project ID: ${projId}`);
+console.log(`Model ID: ${model}`);
 
 async function getIamToken(key) {
   const tokenUrl = 'https://iam.cloud.ibm.com/identity/token';

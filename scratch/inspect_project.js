@@ -1,5 +1,5 @@
-const apiKey = '5aBebNbNmb8Wx1Ni2gJ6QuRI9r3sxylMX94pf0dCI6w1';
-const projId = 'b46fe928-720d-4d83-85ef-923c47553d2c';
+const apiKey = '70AR2D3PftmSR3W0mggrEakWuINUAZNHi3Nr5RtbrCDd';
+const projId = 'b7f98012-b8b3-42ff-bd5d-a74f6ffb469e';
 
 async function getIamToken(key) {
   const tokenUrl = 'https://iam.cloud.ibm.com/identity/token';
@@ -18,21 +18,27 @@ async function getIamToken(key) {
 }
 
 async function inspectProject() {
-  const url = `https://api.dataplatform.cloud.ibm.com/v2/projects/${projId}`;
+  const urls = [
+    `https://api.eu-gb.dataplatform.cloud.ibm.com/v2/projects/${projId}`,
+    `https://api.dataplatform.cloud.ibm.com/v2/projects/${projId}`
+  ];
+
   try {
     const token = await getIamToken(apiKey);
-    console.log(`\nCalling: ${url}`);
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    for (const url of urls) {
+      console.log(`\nCalling: ${url}`);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-    console.log(`Status: ${res.status}`);
-    const data = await res.json();
-    console.log('Project Details:', JSON.stringify(data, null, 2));
+      console.log(`Status: ${res.status}`);
+      const data = await res.json();
+      console.log('Project Details:', JSON.stringify(data, null, 2));
+    }
   } catch (e) {
     console.error('Failed to inspect project:', e);
   }
