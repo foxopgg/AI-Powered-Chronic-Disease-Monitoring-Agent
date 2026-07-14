@@ -35,7 +35,7 @@ if (!apiKey || !svcUrl || !projId) {
   process.exit(1);
 }
 
-model = model || 'meta-llama/llama-3-8b-instruct';
+model = model || 'ibm/granite-3-2-8b-instruct';
 
 console.log(`API Key: ${apiKey.slice(0, 5)}...${apiKey.slice(-5)}`);
 console.log(`Service URL: ${svcUrl}`);

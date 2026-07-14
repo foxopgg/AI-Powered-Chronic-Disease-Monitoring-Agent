@@ -1,4 +1,4 @@
-﻿/* ===================================================================
+/* ===================================================================
    VitalSense AI — Core Application
    app.js  ·  Vanilla ES6  ·  IBM watsonx.ai Studio Clinical AI
    CSV Patient Loader · RAG Vector Store · IBM Cloud Integration
@@ -254,7 +254,7 @@ const STATE = {
   logDraft:           {},
   charts:             {},
   settings: {
-    modelId: 'meta-llama/llama-3-70b-instruct',
+    modelId: 'ibm/granite-3-2-8b-instruct',
     useReal: false,
     cosEndpoint: '',
     cosBucket: 'vitalsense-reports',
@@ -1107,7 +1107,7 @@ function renderRAGStatus() {
   const items = [
     { title:'Client Vector Store', desc:`${CLINICAL_KNOWLEDGE.length} clinical knowledge chunks indexed (ADA, JNC-8, AHA guidelines). Active for all queries.`, status:'active', label:'Active' },
     { title:'IBM Cloud Object Storage', desc:`COS Endpoint: ${STATE.settings.cosEndpoint || 'Not configured'}. Bucket: ${STATE.settings.cosBucket || 'vitalsense-reports'}. Stores uploaded PDFs, reports, and AI-generated health dossiers.`, status: cosStatus, label: cosStatus === 'active' ? 'Connected' : 'Not Configured' },
-    { title:'IBM Watson ML / watsonx.ai', desc:`Model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}. Real AI inference via watsonx.ai Studio.`, status: STATE.settings.useReal ? 'active' : 'optional', label: STATE.settings.useReal ? 'Connected' : 'Simulator Mode' },
+    { title:'IBM Watson ML / watsonx.ai', desc:`Model: ${STATE.settings.modelId || 'ibm/granite-3-2-8b-instruct'}. Real AI inference via watsonx.ai Studio.`, status: STATE.settings.useReal ? 'active' : 'optional', label: STATE.settings.useReal ? 'Connected' : 'Simulator Mode' },
     { title:'Patient Dataset', desc:`${STATE.patients.length} patients loaded (${STATE.patients.filter(p => analyzeVitals(p).level === 'critical').length} critical, ${STATE.patients.filter(p => analyzeVitals(p).level === 'warning').length} warning). Edit patients.csv to modify.`, status:'active', label:'Loaded' },
   ];
   container.innerHTML = items.map(item => `
@@ -1281,7 +1281,7 @@ function openSettings() {
   const s = STATE.settings;
   document.getElementById('cfg-apikey').value    = s.apiKey    || '';
   document.getElementById('cfg-url').value       = s.watsonUrl || '';
-  document.getElementById('cfg-model').value     = s.modelId   || 'meta-llama/llama-3-8b-instruct';
+  document.getElementById('cfg-model').value     = s.modelId   || 'ibm/granite-3-2-8b-instruct';
   document.getElementById('cfg-project').value   = s.projectId || '';
   document.getElementById('cfg-use-real').checked = s.useReal  || false;
   // COS Settings
@@ -1304,7 +1304,7 @@ function closeSettingsDirect() { document.getElementById('settings-overlay').cla
 function saveSettings() {
   STATE.settings.apiKey    = document.getElementById('cfg-apikey').value.trim();
   STATE.settings.watsonUrl = document.getElementById('cfg-url').value.trim();
-  STATE.settings.modelId   = document.getElementById('cfg-model').value.trim() || 'meta-llama/llama-3-8b-instruct';
+  STATE.settings.modelId   = document.getElementById('cfg-model').value.trim() || 'ibm/granite-3-2-8b-instruct';
   STATE.settings.projectId = document.getElementById('cfg-project').value.trim();
   /* useReal is always true when credentials are present — toggle is kept for override only */
   STATE.settings.useReal   = document.getElementById('cfg-use-real').checked;
@@ -1351,7 +1351,7 @@ function updateApiStatus() {
   const el = document.getElementById('api-status');
   if (!el) return;
   if (STATE.hasServerCredentials) {
-    el.textContent = `✅ IBM watsonx.ai Studio ready via server environment variables — model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}`;
+    el.textContent = `✅ IBM watsonx.ai Studio ready via server environment variables — model: ${STATE.settings.modelId || 'ibm/granite-3-2-8b-instruct'}`;"
     el.className = 'api-status connected';
   } else {
     el.textContent = '⚠️ IBM Cloud credentials are not configured on the server. Configure .env and restart the app.';
@@ -1370,7 +1370,7 @@ function updateIBMStatusDot() {
 
   const chatTag = document.getElementById('chat-model-tag');
   if (chatTag) {
-    chatTag.textContent = ready ? (STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct') : '⚠️ Not Connected';
+    chatTag.textContent = ready ? (STATE.settings.modelId || 'ibm/granite-3-2-8b-instruct') : '⚠️ Not Connected';
     chatTag.className   = `chat-model-tag ${ready ? 'real' : ''}`;
   }
 }

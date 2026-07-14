@@ -102,7 +102,7 @@ app.get('/api/config', (req, res) => {
   
   res.json({
     hasServerCredentials: hasCreds,
-    modelId: process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct',
+    modelId: process.env.IBM_MODEL_ID || 'ibm/granite-3-2-8b-instruct',
     hasCosCredentials: hasCos,
     cosEndpoint: process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT || '',
     cosBucket: process.env.COS_BUCKET || process.env.IBM_COS_BUCKET || 'vitalsense-reports',
@@ -150,7 +150,7 @@ app.post('/api/chat', async (req, res) => {
 
     const apiKey = process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
     const svcUrl = (process.env.WATSON_ML_URL || '').replace(/\/$/, '');
-    const model = process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct';
+    const model = process.env.IBM_MODEL_ID || 'ibm/granite-3-2-8b-instruct';
     const projId = process.env.WATSONX_PROJECT_ID;
 
     if (!apiKey) {
@@ -558,7 +558,7 @@ app.post('/api/reports/analyze', async (req, res) => {
 
     const apiKey = process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
     const svcUrl = (process.env.WATSON_ML_URL || '').replace(/\/$/, '');
-    const model = process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct';
+    const model = process.env.IBM_MODEL_ID || 'ibm/granite-3-2-8b-instruct';
     const projId = process.env.WATSONX_PROJECT_ID;
 
     if (!apiKey || !svcUrl || !projId) {

@@ -29,7 +29,7 @@
     "IBM_MODEL_ID": {
       "description": "LLM Model ID to use in watsonx.ai Studio.",
       "required": false,
-      "value": "meta-llama/llama-3-8b-instruct"
+      "value": "ibm/granite-3-2-8b-instruct"
     },
     "COS_ENDPOINT": {
       "description": "IBM Cloud Object Storage endpoint (e.g. s3.eu-gb.cloud-object-storage.appdomain.cloud).",

@@ -140,7 +140,7 @@ Create a `.env` file in the project root (copy from `.env.example`):
 IBM_API_KEY=YOUR_IBM_CLOUD_API_KEY
 WATSONX_PROJECT_ID=YOUR_WATSONX_PROJECT_ID
 WATSON_ML_URL=https://us-south.ml.cloud.ibm.com
-IBM_MODEL_ID=meta-llama/llama-3-8b-instruct
+IBM_MODEL_ID=ibm/granite-3-2-8b-instruct
 
 # IBM Cloud Object Storage
 COS_ENDPOINT=s3.us-south.cloud-object-storage.appdomain.cloud
@@ -153,8 +153,9 @@ PORT=3000
 ```
 
 **Supported model IDs (IBM watsonx.ai Lite):**
-- `meta-llama/llama-3-8b-instruct` (default, fastest)
-- `meta-llama/llama-3-70b-instruct` (most capable)
+- `ibm/granite-3-2-8b-instruct` (default, fastest)
+- `meta-llama/llama-3-8b-instruct`
+- `meta-llama/llama-3-70b-instruct`
 - `ibm/granite-3-8b-instruct`
 - `mistralai/mistral-large`
 
