@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// Use exact absolute path to the .env file
 const envPath = 'c:\\Users\\USER\\Documents\\GitHub\\AI-Powered-Chronic-Disease-Monitoring-Agent\\.env';
 console.log(`Reading .env from: ${envPath}`);
 
@@ -31,8 +30,6 @@ if (!apiKey) {
   process.exit(1);
 }
 
-console.log(`Using API key: ${apiKey.slice(0, 5)}...${apiKey.slice(-5)}`);
-
 async function getIamToken(key) {
   const tokenUrl = 'https://iam.cloud.ibm.com/identity/token';
   const res = await fetch(tokenUrl, {
@@ -55,10 +52,12 @@ async function main() {
     const token = await getIamToken(apiKey);
     console.log('IAM Token retrieved successfully.');
 
-    // We'll try the main global dataplatform projects API endpoint first
     const endpoints = [
       'https://api.dataplatform.cloud.ibm.com/v2/projects',
-      'https://api.us-south.dataplatform.cloud.ibm.com/v2/projects'
+      'https://api.us-south.dataplatform.cloud.ibm.com/v2/projects',
+      'https://api.eu-de.dataplatform.cloud.ibm.com/v2/projects',
+      'https://api.eu-gb.dataplatform.cloud.ibm.com/v2/projects',
+      'https://api.au-syd.dataplatform.cloud.ibm.com/v2/projects'
     ];
 
     for (const url of endpoints) {

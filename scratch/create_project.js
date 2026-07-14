@@ -56,14 +56,19 @@ async function createProject(token, name, guid, bssId) {
     generator: 'vitalsense-ai',
     storage: {
       type: 'bmcos_object_storage',
-      guid: guid
+      guid: guid,
+      properties: {
+        bucket_name: 'vettalsenseai-donotdelete-pr-u462nlwdi5bhpw',
+        bucket_region: 'us-south',
+        endpoint_url: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'
+      }
     },
     scope: {
       bss: bssId
     }
   };
 
-  console.log(`Sending POST request to ${url} with GUID: ${guid} and scope BSS: ${bssId}`);
+  console.log(`Sending POST request to ${url}`);
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -89,8 +94,8 @@ async function main() {
     const token = await getIamToken(apiKey);
     console.log('IAM Token retrieved successfully.');
 
-    console.log('\n--- Attempting to create project using storage GUID ---');
-    const result = await createProject(token, 'VitalSense AI', cosInstanceGuid, bssAccountId);
+    console.log('\n--- Attempting to create project with storage properties ---');
+    const result = await createProject(token, 'VitalSense AI Studio', cosInstanceGuid, bssAccountId);
     console.log('Result:', JSON.stringify(result, null, 2));
 
     if (result.metadata && result.metadata.guid) {

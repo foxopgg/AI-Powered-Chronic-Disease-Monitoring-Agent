@@ -254,9 +254,12 @@ const STATE = {
   logDraft:           {},
   charts:             {},
   settings: {
-    apiKey: '', watsonUrl: '', modelId: 'meta-llama/llama-3-70b-instruct',
-    projectId: '', useReal: false,
-    discoveryUrl: '', discoveryKey: '', discoveryProjectId: '', discoveryEnabled: false,
+    modelId: 'meta-llama/llama-3-70b-instruct',
+    useReal: false,
+    cosEndpoint: '',
+    cosBucket: 'vitalsense-reports',
+    cosEnabled: true,
+    discoveryEnabled: false,
   },
   medTaken: {},
   
@@ -275,7 +278,7 @@ const STATE = {
    6. PERSISTENCE
 -------------------------------------------------- */
 function savePatients()    { try { localStorage.setItem('vs_patients', JSON.stringify(STATE.patients)); } catch(e) {} }
-function persistSettings() { try { localStorage.setItem('vs_settings', JSON.stringify(STATE.settings)); } catch(e) {} }
+function persistSettings() { /* Client-side browser settings are disabled for security; server-side .env config is used instead. */ }
 function saveMedTaken()    { try { localStorage.setItem('vs_medtaken', JSON.stringify(STATE.medTaken)); } catch(e) {} }
 function saveAlerts()      { try { localStorage.setItem('vs_alerts',   JSON.stringify(STATE.alerts));   } catch(e) {} }
 
@@ -315,22 +318,6 @@ async function loadState() {
       return p;
     });
   }
-
-  try {
-    const sets = localStorage.getItem('vs_settings');
-    if (sets) STATE.settings = { ...STATE.settings, ...JSON.parse(sets) };
-    // Merge config.js values if they exist and settings are blank
-    if (window.IBM_CONFIG) {
-      if (!STATE.settings.apiKey && IBM_CONFIG.iam.apiKey)
-        STATE.settings.apiKey = IBM_CONFIG.iam.apiKey;
-      if (!STATE.settings.watsonUrl)
-        STATE.settings.watsonUrl = IBM_CONFIG.watsonML.serviceUrl;
-      if (!STATE.settings.modelId)
-        STATE.settings.modelId = IBM_CONFIG.watsonML.modelId;
-      if (!STATE.settings.projectId && IBM_CONFIG.watsonML.projectId)
-        STATE.settings.projectId = IBM_CONFIG.watsonML.projectId;
-    }
-  } catch(e) {}
 
   try {
     const med = localStorage.getItem('vs_medtaken');
@@ -1363,23 +1350,11 @@ function saveSettings() {
 function updateApiStatus() {
   const el = document.getElementById('api-status');
   if (!el) return;
-  const apiKey   = document.getElementById('cfg-apikey')?.value.trim()  || STATE.settings.apiKey;
-  const watsonUrl= document.getElementById('cfg-url')?.value.trim()     || STATE.settings.watsonUrl;
-  const projId   = document.getElementById('cfg-project')?.value.trim() || STATE.settings.projectId;
-
-  if (apiKey && watsonUrl && projId) {
-    el.textContent = `✅ IBM watsonx.ai Studio ready — model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}`;
-    el.className = 'api-status connected';
-  } else if (STATE.hasServerCredentials) {
-    el.textContent = `✅ IBM watsonx.ai Studio ready via Server Environment Variables — model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}`;
+  if (STATE.hasServerCredentials) {
+    el.textContent = `✅ IBM watsonx.ai Studio ready via server environment variables — model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}`;
     el.className = 'api-status connected';
   } else {
-    const missing = [
-      !apiKey    && 'API Key',
-      !watsonUrl && 'Watson ML URL',
-      !projId    && 'Project ID',
-    ].filter(Boolean).join(', ');
-    el.textContent = `⚠️ Missing: ${missing}. IBM watsonx.ai Studio AI features are disabled until all three fields are filled.`;
+    el.textContent = '⚠️ IBM Cloud credentials are not configured on the server. Configure .env and restart the app.';
     el.className = 'api-status error';
   }
 }
@@ -1403,25 +1378,18 @@ function updateIBMStatusDot() {
 async function testConnection() {
   const el = document.getElementById('api-status');
   if (!el) return;
-  const apiKey = document.getElementById('cfg-apikey').value.trim();
-  if (!apiKey) {
-    el.textContent = '⚠️ Please provide an API Key before testing.';
-    el.className = 'api-status error'; return;
-  }
-  el.textContent = 'Testing IBM Cloud IAM connection via server...';
+  el.textContent = 'Testing IBM Cloud credentials via server...';
   el.className = 'api-status muted-label';
   try {
-    const res = await fetch('/api/test-connection', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey }),
-    });
+    const res = await fetch('/api/test-connection', { method: 'POST' });
     const data = await res.json();
     if (res.ok && data.success) {
-      el.textContent = '✅ IBM Cloud IAM token obtained via server. API credentials valid.';
+      el.textContent = '✅ IBM Cloud credentials are valid and loaded from server .env.';
       el.className = 'api-status connected';
+      STATE.hasServerCredentials = true;
+      updateIBMStatusDot();
     } else {
-      el.textContent = `❌ Authentication failed: ${data.error || 'Check your API key.'}`;
+      el.textContent = `❌ Authentication failed: ${data.error || 'Check server .env configuration.'}`;
       el.className = 'api-status error';
     }
   } catch (e) {
@@ -1444,8 +1412,7 @@ function sendSuggestion(text) {
 
 /* Returns true when the three mandatory IBM credentials are present */
 function hasIBMCredentials() {
-  const s = STATE.settings;
-  return !!((s.apiKey && s.watsonUrl && s.projectId) || STATE.hasServerCredentials);
+  return !!STATE.hasServerCredentials;
 }
 
 function sendChat() {
@@ -1472,7 +1439,7 @@ function sendChat() {
     /* Credentials missing — prompt user to configure, do not use simulator */
     typingEl.remove();
     appendChatMsg(
-      '⚠️ IBM watsonx.ai Studio credentials are required.\n\nPlease open ⚙️ Settings and enter your:\n  • IBM Cloud API Key\n  • Watson ML Service URL\n  • watsonx.ai Project ID\n\nThis application requires IBM Cloud Lite services. See SETUP.md for a step-by-step provisioning guide.',
+      '⚠️ IBM watsonx.ai Studio credentials are required.\n\nThis application uses server-side environment variables only. Configure IBM Cloud API Key, Watson ML Service URL, and watsonx.ai Project ID in the server .env file or Render environment settings, then restart the app.\n\nSee SETUP.md for provisioning guidance.',
       'ai', msgs
     );
     setTimeout(() => openSettings(), 800);
@@ -1529,7 +1496,7 @@ async function callRealGraniteChat(query, patient) {
     PROMPT_TEMPLATES.ragContext(ragPassages) +
     PROMPT_TEMPLATES.userQuery(query);
 
-  return await callGraniteAPI(prompt, STATE.settings);
+  return await callGraniteAPI(prompt);
 }
 
 /* ----------------------------------------------
@@ -1777,10 +1744,7 @@ function requestAISummary() {
     content.textContent =
       '⚠️ IBM watsonx.ai Studio credentials required.\n\n' +
       'This AI analysis requires a live IBM watsonx.ai Studio model connection.\n\n' +
-      'Please open ⚙️ Settings and enter:\n' +
-      '  • IBM Cloud API Key\n' +
-      '  • Watson ML Service URL  (e.g. https://us-south.ml.cloud.ibm.com)\n' +
-      '  • watsonx.ai Project ID\n\n' +
+      'Configure the IBM Cloud API Key, Watson ML Service URL, and watsonx.ai Project ID as server-side environment variables in .env or Render dashboard, then restart the app.\n\n' +
       'IBM Cloud Lite plan is free — no credit card required.\n' +
       'See SETUP.md for step-by-step provisioning.';
     setTimeout(() => openSettings(), 600);
@@ -1801,7 +1765,7 @@ function requestAISummary() {
           `⚠️ IBM watsonx.ai Studio API unavailable: ${err.message}\n[SIMULATOR FALLBACK — not a real IBM response]\n\n` +
           graniteGeneratePatientSummary(p);
       } else {
-        content.textContent = `❌ IBM watsonx.ai Studio API error: ${err.message}\n\nCheck your credentials in ⚙️ Settings.`;
+        content.textContent = `❌ IBM watsonx.ai Studio API error: ${err.message}\n\nCheck your server .env configuration.`;
       }
     });
 }
@@ -2425,15 +2389,7 @@ async function exportClinicalPDF() {
   const formData = new FormData();
   formData.append('file', pdfBlob, `${p.name.replace(/\s+/g, '_')}_Health_Report.pdf`);
   formData.append('patientId', p.id);
-  
-  const settingsPayload = {
-    cosApiKey: STATE.settings.cosApiKey || STATE.settings.apiKey,
-    cosEndpoint: STATE.settings.cosEndpoint || 's3.us-south.cloud-object-storage.appdomain.cloud',
-    cosBucket: STATE.settings.cosBucket || 'vitalsense-reports',
-    cosInstanceId: STATE.settings.cosInstanceId || ''
-  };
-  formData.append('settings', JSON.stringify(settingsPayload));
-  
+
   fetch('/api/reports/upload-generated', {
     method: 'POST',
     body: formData
@@ -2619,7 +2575,7 @@ async function runGraniteSymptomChecker() {
     }
     
     const prompt = PROMPT_TEMPLATES.symptomCheck(text, p);
-    const responseText = await callGraniteAPI(prompt, STATE.settings);
+    const responseText = await callGraniteAPI(prompt);
     
     try {
       const startIdx = responseText.indexOf('{');
@@ -2744,7 +2700,7 @@ async function generateAISchedulePlan() {
     }
     
     const prompt = PROMPT_TEMPLATES.lifestylePlan(p, analysis);
-    const responseText = await callGraniteAPI(prompt, STATE.settings);
+    const responseText = await callGraniteAPI(prompt);
     
     try {
       const startIdx = responseText.indexOf('{');
@@ -2822,15 +2778,7 @@ async function handleFileSelected(files) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('patientId', p.id);
-  
-  const settingsPayload = {
-    cosApiKey: STATE.settings.cosApiKey || STATE.settings.apiKey,
-    cosEndpoint: STATE.settings.cosEndpoint || 's3.us-south.cloud-object-storage.appdomain.cloud',
-    cosBucket: STATE.settings.cosBucket || 'vitalsense-reports',
-    cosInstanceId: STATE.settings.cosInstanceId || ''
-  };
-  formData.append('settings', JSON.stringify(settingsPayload));
-  
+
   try {
     if (fill) fill.style.width = '60%';
     
@@ -2945,10 +2893,7 @@ async function analyzeSelectedReport() {
     const res = await fetch('/api/reports/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        reportId: currentSelectedReportId,
-        settings: STATE.settings
-      })
+      body: JSON.stringify({ reportId: currentSelectedReportId })
     });
     
     if (res.ok) {

@@ -123,26 +123,20 @@ app.get('/api/health', (req, res) => {
  */
 app.post('/api/test-connection', async (req, res) => {
   try {
-    const { apiKey } = req.body;
+    const apiKey = process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
     if (!apiKey) {
-      return res.status(400).json({ error: 'API key is required' });
+      return res.status(400).json({ success: false, error: 'Server environment IBM API key is not configured.' });
     }
 
-    const tokenRes = await fetch('https://iam.cloud.ibm.com/identity/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=${encodeURIComponent(apiKey)}`,
-    });
-
-    if (tokenRes.ok) {
-      res.json({ success: true });
-    } else {
-      const errText = await tokenRes.text().catch(() => '');
-      res.status(tokenRes.status).json({ success: false, error: errText.slice(0, 150) });
+    const token = await getServerToken(apiKey);
+    if (token) {
+      return res.json({ success: true });
     }
+
+    res.status(500).json({ success: false, error: 'Unable to obtain IBM Cloud token from server environment.' });
   } catch (error) {
     console.error('Error in /api/test-connection:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -152,13 +146,12 @@ app.post('/api/test-connection', async (req, res) => {
  */
 app.post('/api/chat', async (req, res) => {
   try {
-    const { prompt, settings } = req.body;
+    const { prompt } = req.body;
 
-    // Retrieve settings, prioritizing client overrides, falling back to server environment variables
-    const apiKey = settings?.apiKey || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
-    const svcUrl = (settings?.watsonUrl || process.env.WATSON_ML_URL || '').replace(/\/$/, '');
-    const model = settings?.modelId || process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct';
-    const projId = settings?.projectId || process.env.WATSONX_PROJECT_ID;
+    const apiKey = process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
+    const svcUrl = (process.env.WATSON_ML_URL || '').replace(/\/$/, '');
+    const model = process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct';
+    const projId = process.env.WATSONX_PROJECT_ID;
 
     if (!apiKey) {
       return res.status(400).json({ error: 'IBM Cloud API key not configured.' });
@@ -289,18 +282,16 @@ app.post('/api/reports/upload', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const settings = req.body.settings ? JSON.parse(req.body.settings) : null;
     const filename = `${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     
     let source = 'local';
     let fileUrl = `/uploads/${filename}`;
     let uploadError = null;
 
-    // Check COS credentials: form settings override, then env vars (both naming conventions)
-    const cosApiKey = settings?.cosApiKey || process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
-    const cosEndpoint = settings?.cosEndpoint || process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT;
-    const cosBucket = settings?.cosBucket || process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
-    const cosInstanceId = settings?.cosInstanceId || process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
+    const cosApiKey = process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
+    const cosEndpoint = process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT;
+    const cosBucket = process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
+    const cosInstanceId = process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
 
     if (cosApiKey && cosEndpoint && cosBucket) {
       try {
@@ -325,7 +316,7 @@ app.post('/api/reports/upload', upload.single('file'), async (req, res) => {
 
         if (cosRes.ok) {
           source = 'cos';
-          fileUrl = `/api/reports/file/${filename}?endpoint=${encodeURIComponent(host)}&bucket=${encodeURIComponent(cosBucket)}&instanceId=${encodeURIComponent(cosInstanceId || '')}`;
+          fileUrl = `/api/reports/file/${filename}`;
           console.log(`[COS] Successfully uploaded ${filename} to COS.`);
         } else {
           const txt = await cosRes.text().catch(() => '');
@@ -379,16 +370,15 @@ app.post('/api/reports/upload-generated', upload.single('file'), async (req, res
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const settings = req.body.settings ? JSON.parse(req.body.settings) : null;
     const filename = `clinical_report_${patientId}_${Date.now()}.pdf`;
     
     let source = 'local';
     let fileUrl = `/uploads/${filename}`;
 
-    const cosApiKey = settings?.cosApiKey || process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
-    const cosEndpoint = settings?.cosEndpoint || process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT;
-    const cosBucket = settings?.cosBucket || process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
-    const cosInstanceId = settings?.cosInstanceId || process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
+    const cosApiKey = process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
+    const cosEndpoint = process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT;
+    const cosBucket = process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
+    const cosInstanceId = process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
 
     if (cosApiKey && cosEndpoint && cosBucket) {
       try {
@@ -412,7 +402,7 @@ app.post('/api/reports/upload-generated', upload.single('file'), async (req, res
 
         if (cosRes.ok) {
           source = 'cos';
-          fileUrl = `/api/reports/file/${filename}?endpoint=${encodeURIComponent(host)}&bucket=${encodeURIComponent(cosBucket)}&instanceId=${encodeURIComponent(cosInstanceId || '')}`;
+          fileUrl = `/api/reports/file/${filename}`;
         }
       } catch (e) {
         console.warn(`[COS] Generated PDF upload failed: ${e.message}. Saving locally.`);
@@ -454,18 +444,18 @@ app.post('/api/reports/upload-generated', upload.single('file'), async (req, res
 app.get('/api/reports/file/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
-    const { endpoint, bucket, instanceId } = req.query;
+    const cosApiKey = process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
+    const cosEndpoint = process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT;
+    const cosBucket = process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
+    const cosInstanceId = process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
 
-    if (endpoint && bucket) {
+    if (cosApiKey && cosEndpoint && cosBucket) {
       try {
-        const apiKey = process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
-        const token = await getServerToken(apiKey);
-        const url = `https://${endpoint}/${bucket}/${encodeURIComponent(filename)}`;
-        
-        const headers = { 'Authorization': `Bearer ${token}` };
-        if (instanceId) {
-          headers['ibm-service-instance-id'] = instanceId;
-        }
+        const token = await getServerToken(cosApiKey);
+        const endpoint = cosEndpoint.replace(/\/$/, '').replace(/^https?:\/\//, '');
+        const url = `https://${endpoint}/${cosBucket}/${encodeURIComponent(filename)}`;
+        const headers = { Authorization: `Bearer ${token}` };
+        if (cosInstanceId) headers['ibm-service-instance-id'] = cosInstanceId;
 
         const cosRes = await fetch(url, { headers });
         if (cosRes.ok) {
@@ -503,7 +493,7 @@ app.get('/api/reports/file/:filename', async (req, res) => {
  */
 app.post('/api/reports/analyze', async (req, res) => {
   try {
-    const { reportId, settings } = req.body;
+    const { reportId } = req.body;
     const report = reportsRegistry.find(r => r.id === reportId);
     if (!report) {
       return res.status(404).json({ error: 'Report not found' });
@@ -513,10 +503,14 @@ app.post('/api/reports/analyze', async (req, res) => {
     let fileBuffer;
 
     if (report.source === 'cos') {
-      const apiKey = settings?.cosApiKey || settings?.apiKey || process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
-      const endpoint = (settings?.cosEndpoint || process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT || '').replace(/\/$/, '').replace(/^https?:\/\//, '');
-      const bucket = settings?.cosBucket || process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
-      const instanceId = settings?.cosInstanceId || process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
+      const apiKey = process.env.COS_API_KEY || process.env.IBM_COS_API_KEY || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
+      const endpoint = (process.env.COS_ENDPOINT || process.env.IBM_COS_ENDPOINT || '').replace(/\/$/, '').replace(/^https?:\/\//, '');
+      const bucket = process.env.COS_BUCKET || process.env.IBM_COS_BUCKET;
+      const instanceId = process.env.COS_INSTANCE_ID || process.env.IBM_COS_INSTANCE_ID;
+
+      if (!apiKey || !endpoint || !bucket) {
+        throw new Error('Server-side COS credentials are not configured. Please set COS_ENDPOINT, COS_BUCKET, and COS API key in .env.');
+      }
 
       const token = await getServerToken(apiKey);
       const url = `https://${endpoint}/${bucket}/${encodeURIComponent(report.filename)}`;
@@ -562,10 +556,10 @@ app.post('/api/reports/analyze', async (req, res) => {
     // Limit text size for token limits
     textContent = textContent.slice(0, 3000);
 
-    const apiKey = settings?.apiKey || process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
-    const svcUrl = (settings?.watsonUrl || process.env.WATSON_ML_URL || '').replace(/\/$/, '');
-    const model = settings?.modelId || process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct';
-    const projId = settings?.projectId || process.env.WATSONX_PROJECT_ID;
+    const apiKey = process.env.IBM_API_KEY || process.env.IBM_CLOUD_API_KEY;
+    const svcUrl = (process.env.WATSON_ML_URL || '').replace(/\/$/, '');
+    const model = process.env.IBM_MODEL_ID || 'meta-llama/llama-3-8b-instruct';
+    const projId = process.env.WATSONX_PROJECT_ID;
 
     if (!apiKey || !svcUrl || !projId) {
       // Offline fallback

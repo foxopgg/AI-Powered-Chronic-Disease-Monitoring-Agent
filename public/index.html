@@ -1214,78 +1214,18 @@
       <button class="icon-btn sm" onclick="closeSettingsDirect()" aria-label="Close">✕</button>
     </div>
     <div class="modal-body settings-body">
-      
-      <div style="background:rgba(255,75,110,0.06);border:1px solid rgba(255,75,110,0.25);border-radius:10px;padding:0.8rem 1rem;margin-bottom:1rem;">
-        <div style="font-weight:700;color:#ff4b6e;font-size:0.82rem;margin-bottom:4px;">⚠️ IBM Cloud Lite Services are Active</div>
+      <div style="background:rgba(255,75,110,0.06);border:1px solid rgba(255,75,110,0.25);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+        <div style="font-weight:700;color:#ff4b6e;font-size:0.82rem;margin-bottom:4px;">IBM Cloud credentials are managed on the server only.</div>
         <div style="color:#b0bbd0;font-size:0.75rem;line-height:1.5;">
-          This platform utilizes **IBM watsonx.ai Studio LLM** via watsonx.ai and **IBM Cloud Object Storage** for cloud reports storage. Provide your credentials below to connect to live IBM APIs, or utilize the built-in offline simulator fallbacks.
+          The application reads IBM Cloud API Key, Watson ML URL, and COS credentials exclusively from the server-side <code>.env</code> file.
+          Update <code>.env</code> and restart the server to apply changes. Browser-side key entry has been disabled for Render deployment security.
         </div>
       </div>
 
-      <div class="settings-grid">
-        <!-- Watson Machine Learning Credentials -->
-        <div class="settings-section">
-          <h4 class="settings-section-title">Watson ML / watsonx.ai (LLM Chat &amp; Risk)</h4>
-          <div class="input-group">
-            <label for="cfg-apikey">IBM Cloud API Key</label>
-            <input type="password" id="cfg-apikey" placeholder="Enter IBM Cloud API key..." autocomplete="off" />
-          </div>
-          <div class="input-group">
-            <label for="cfg-url">Watson ML Service URL</label>
-            <input type="text" id="cfg-url" placeholder="https://us-south.ml.cloud.ibm.com" />
-          </div>
-          <div class="input-group">
-            <label for="cfg-project">watsonx.ai Project ID</label>
-            <input type="text" id="cfg-project" placeholder="Enter Project ID..." />
-          </div>
-          <div class="input-group">
-            <label for="cfg-model">IBM watsonx.ai Studio Model ID</label>
-            <input type="text" id="cfg-model" placeholder="meta-llama/llama-3-8b-instruct" />
-          </div>
-          <div class="toggle-row">
-            <label style="color:#5a6780;font-size:0.78rem">IBM watsonx.ai Studio API (auto-enabled with credentials)</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="cfg-use-real" checked />
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-
-        <!-- IBM Cloud Object Storage Credentials -->
-        <div class="settings-section">
-          <h4 class="settings-section-title">IBM Cloud Object Storage (Report Storage)</h4>
-          <div class="input-group">
-            <label for="cfg-cos-apikey">COS API Key (Optional)</label>
-            <input type="password" id="cfg-cos-apikey" placeholder="Defaults to main API key if empty..." autocomplete="off" />
-          </div>
-          <div class="input-group">
-            <label for="cfg-cos-endpoint">COS Endpoint URL</label>
-            <input type="text" id="cfg-cos-endpoint" placeholder="s3.us-south.cloud-object-storage.appdomain.cloud" />
-          </div>
-          <div class="input-group">
-            <label for="cfg-cos-bucket">COS Bucket Name</label>
-            <input type="text" id="cfg-cos-bucket" placeholder="vitalsense-reports" />
-          </div>
-          <div class="input-group">
-            <label for="cfg-cos-instance">COS Service Instance ID</label>
-            <input type="text" id="cfg-cos-instance" placeholder="crn:v1:bluemix:public:cloud-object-storage..." />
-          </div>
-          <div class="toggle-row">
-            <label style="color:#5a6780;font-size:0.78rem">Enable COS Bucket Uploads</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="cfg-cos-enabled" checked />
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div id="api-status" class="api-status error">⚠️ Missing: Watson ML API Key, Service URL, and Project ID. AI operations running in Simulator fallback mode.</div>
+      <div id="api-status" class="api-status error">⚠️ Server credentials are required. Configure IBM Cloud values in <code>.env</code> and restart the app.</div>
     </div>
     <div class="modal-footer">
-      <button class="action-btn emerald" onclick="saveSettings()">Save &amp; Connect</button>
-      <button class="action-btn blue" onclick="testConnection()">Test Connection</button>
-      <button class="action-btn ghost" onclick="closeSettingsDirect()">Cancel</button>
+      <button class="action-btn ghost" onclick="closeSettingsDirect()">Close</button>
     </div>
   </div>
 </div>
