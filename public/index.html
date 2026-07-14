@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VitalSense AI — IBM Granite Chronic Disease Intelligence</title>
+  <title>VitalSense AI — IBM watsonx.ai Studio Chronic Disease Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="config.js"></script>
+  <script src="locales.js"></script>
 </head>
 <body>
 
@@ -24,7 +25,7 @@
 
 <!-- ═══════════════════════════ TOP NAVIGATION ═══════════════════════════ -->
 <header class="topnav" role="banner">
-  <div class="brand">
+  <div class="brand" onclick="switchPortal('landing')" style="cursor:pointer">
     <div class="brand-logo">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
         <circle cx="14" cy="14" r="13" stroke="url(#grad1)" stroke-width="1.5"/>
@@ -40,29 +41,45 @@
     </div>
     <div class="brand-text">
       <span class="brand-name">VitalSense AI</span>
-      <span class="brand-sub">IBM Granite · Chronic Disease Intelligence</span>
+      <span class="brand-sub">IBM watsonx.ai Studio · Chronic Disease Intelligence</span>
     </div>
   </div>
 
   <nav class="portal-nav" aria-label="Portal navigation">
-    <button class="portal-btn active" id="btn-patient" onclick="switchPortal('patient')" aria-pressed="true">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+    <button class="portal-btn active" id="btn-landing" onclick="switchPortal('landing')" aria-pressed="true">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="portal-btn" id="btn-patient" onclick="switchPortal('patient')" aria-pressed="false">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
       Patient
     </button>
     <button class="portal-btn" id="btn-provider" onclick="switchPortal('provider')" aria-pressed="false">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
       Provider
     </button>
     <button class="portal-btn" id="btn-analytics" onclick="switchPortal('analytics')" aria-pressed="false">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12v4M12 8v8M17 10v6"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12v4M12 8v8M17 10v6"/></svg>
       Analytics
     </button>
   </nav>
 
   <div class="nav-controls">
-    <div class="ibm-status-dot" id="ibm-status-dot" title="IBM Granite Status">
+    <div class="ibm-status-dot" id="ibm-status-dot" title="IBM watsonx.ai Studio Status">
       <span class="dot"></span>
       <span class="ibm-status-label">Simulator</span>
+    </div>
+    <!-- Light/Dark Toggle -->
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode">
+      <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <!-- Language Selector -->
+    <div class="lang-selector-wrap" style="margin-left: 2px;">
+      <select id="lang-selector" onchange="changeLanguage(this.value)" aria-label="Select Language" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: var(--radius-xs); padding: 5px 8px; font-family: inherit; font-size: 0.8rem; cursor: pointer; outline: none;">
+        <option value="en">EN</option>
+        <option value="es">ES</option>
+        <option value="fr">FR</option>
+      </select>
     </div>
     <button class="icon-btn glow-btn" id="notif-bell" onclick="toggleNotifPanel()" title="Alerts" aria-label="Notifications">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -71,11 +88,9 @@
     <button class="icon-btn" onclick="openSettings()" title="Settings" aria-label="Settings">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
     </button>
-    <div class="patient-selector-wrap">
+    <div class="patient-selector-wrap" style="display: none;" id="patient-selector-nav">
       <select id="patient-selector" onchange="switchPatient(this.value)" aria-label="Select patient">
-        <option value="0">Aarav Mehta — Diabetes &amp; Nephropathy</option>
-        <option value="1">Priya Sharma — Hypertension &amp; CAD</option>
-        <option value="2">Dr. Rajesh Iyer — Heart Failure &amp; COPD</option>
+        <!-- Loaded dynamically -->
       </select>
     </div>
   </div>
@@ -93,25 +108,205 @@
   <ul id="notif-list" role="list"><li class="no-notifs">No active alerts</li></ul>
 </aside>
 
+<!-- ═══════════════════════════ LANDING PAGE PORTAL ═══════════════════════════ -->
+<main id="portal-landing" class="portal active" role="main">
+  <!-- Hero Section -->
+  <section class="landing-hero">
+    <div class="hero-left">
+      <span class="badge-tag">IBM watsonx.ai Studio AI · Cloud Object Storage</span>
+      <h1 class="landing-title">Enterprise Chronic Disease Intelligence Platform</h1>
+      <p class="landing-desc">
+        VitalSense AI is a premium clinical decision support and patient monitoring ecosystem. Powered by <strong>IBM watsonx.ai Studio Clinical LLM</strong> and secured by <strong>IBM Cloud Object Storage</strong>, it integrates wearable telemetry, manual inputs, and clinical records to predict risks, coach lifestyles, and prevent emergencies.
+      </p>
+      <div class="landing-actions">
+        <button class="btn-primary" onclick="switchPortal('patient')">Launch Patient Portal</button>
+        <button class="btn-secondary" onclick="switchPortal('provider')">Access Provider Portal</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="ui-mockup glass-panel">
+        <div class="mockup-header">
+          <span class="mockup-dot red"></span><span class="mockup-dot yellow"></span><span class="mockup-dot green"></span>
+          <span class="mockup-title">VitalSense AI Dashboard</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mock-card">
+            <span class="mock-label">Patient Risk Level</span>
+            <div class="mock-row">
+              <span class="mock-value color-coral">CRITICAL (78/100)</span>
+              <span class="mock-pulse heartbeat">♥</span>
+            </div>
+            <div class="mock-spark"></div>
+          </div>
+          <div class="mock-card">
+            <span class="mock-label">IBM watsonx.ai Studio Analysis</span>
+            <p class="mock-text">"High risk of diabetic nephropathy detected. Recommending urine microalbuminuria testing and titration of Telmisartan."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Statistics Section -->
+  <section class="landing-stats-grid">
+    <div class="stat-card glass-card">
+      <h3>99.6%</h3>
+      <p>Telemetry Uptime</p>
+    </div>
+    <div class="stat-card glass-card">
+      <h3>&lt; 3.2s</h3>
+      <p>watsonx.ai Studio Reasoning Latency</p>
+    </div>
+    <div class="stat-card glass-card">
+      <h3>100%</h3>
+      <p>HIPAA / COS Encrypted Files</p>
+    </div>
+    <div class="stat-card glass-card">
+      <h3>12+</h3>
+      <p>Vital Sensors Integrated</p>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+  <section class="landing-section">
+    <h2 class="section-title">Ecosystem Architecture</h2>
+    <p class="section-subtitle">How VitalSense AI combines patient telemetry, IBM Cloud Lite Services, and clinical workflows.</p>
+    
+    <div class="architecture-container glass-card">
+      <div class="arch-flow">
+        <div class="arch-node glass-panel">
+          <div class="node-icon font-emerald">📡</div>
+          <h4>Telemetry / Wearables</h4>
+          <p>IoT Streams &amp; Vitals Inputs</p>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-node glass-panel highlight-blue">
+          <div class="node-icon font-blue">🗄️</div>
+          <h4>IBM Object Storage</h4>
+          <p>Medical PDFs, Reports &amp; Assets</p>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-node glass-panel highlight-teal">
+          <div class="node-icon font-teal">🧠</div>
+          <h4>IBM watsonx.ai Studio AI</h4>
+          <p>Risk Engine, Chat &amp; Diagnostics</p>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-node glass-panel">
+          <div class="node-icon font-violet">🩺</div>
+          <h4>Clinical Portal</h4>
+          <p>Doctor Triage &amp; Action Hub</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="landing-section">
+    <h2 class="section-title">Core Capability Suite</h2>
+    <div class="features-grid">
+      <div class="feat-card glass-card">
+        <span class="feat-icon font-emerald">📊</span>
+        <h3>Continuous Vital Intelligence</h3>
+        <p>Real-time analytics for 12 vitals including blood sugar, blood pressure, oxygenation, sleep, and respiration.</p>
+      </div>
+      <div class="feat-card glass-card">
+        <span class="feat-icon font-teal">💬</span>
+        <h3>IBM watsonx.ai Studio Health Agent</h3>
+        <p>Interactive medical conversation and reasoning assistant built directly on foundational LLM architectures.</p>
+      </div>
+      <div class="feat-card glass-card">
+        <span class="feat-icon font-blue">⚠️</span>
+        <h3>Proactive Risk Engine</h3>
+        <p>Statistical organ complication incidence forecasts and clinical warning classifications for early interventions.</p>
+      </div>
+      <div class="feat-card glass-card">
+        <span class="feat-icon font-violet">📂</span>
+        <h3>Secure COS Analyzer</h3>
+        <p>watsonx.ai-powered text extraction and indexing of patient documents, stored safely inside IBM Cloud Object Storage.</p>
+      </div>
+      <div class="feat-card glass-card">
+        <span class="feat-icon font-coral">🚨</span>
+        <h3>Emergency Intercept</h3>
+        <p>Instantaneous anomaly recognition and emergency banner escalation with geographic hospital routing.</p>
+      </div>
+      <div class="feat-card glass-card">
+        <span class="feat-icon font-amber">🍎</span>
+        <h3>SaaS Lifestyle Coach</h3>
+        <p>Condition-specific daily tasks, hydration, and nutritional goals dynamically tailored to therapeutic targets.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technology Stack -->
+  <section class="landing-section tech-section">
+    <h2 class="section-title">Core Technology Infrastructure</h2>
+    <div class="tech-grid">
+      <div class="tech-item glass-card">
+        <h4>IBM watsonx.ai Studio LLM</h4>
+        <p>Foundational Clinical Intelligence</p>
+      </div>
+      <div class="tech-item glass-card">
+        <h4>watsonx.ai</h4>
+        <p>Foundational AI Model Platform</p>
+      </div>
+      <div class="tech-item glass-card">
+        <h4>IBM Cloud Object Storage</h4>
+        <p>HIPAA-ready Encrypted Document Storage</p>
+      </div>
+      <div class="tech-item glass-card">
+        <h4>IBM Watson Discovery</h4>
+        <p>Evidence-grounded RAG Guidelines</p>
+      </div>
+    </div>
+  </section>
+</main>
+
 <!-- ═══════════════════════════ PATIENT PORTAL ═══════════════════════════ -->
-<main id="portal-patient" class="portal active" role="main">
+<main id="portal-patient" class="portal" role="main">
+
+  <!-- ── Emergency Flashing Banner ── -->
+  <div id="emergency-banner" class="emergency-banner" style="display: none;">
+    <div class="emergency-content">
+      <div class="emergency-badge">⚠️ CRITICAL ALERT</div>
+      <div class="emergency-text-wrap">
+        <span class="emergency-text" id="emergency-text">Severe hypertensive crisis detected. Please consult emergency care.</span>
+        <span class="emergency-subtext">Emergency Contact: <strong id="emergency-contact-name">Maria</strong> (<span id="emergency-contact-phone">+1-555</span>)</span>
+      </div>
+    </div>
+    <div class="emergency-actions">
+      <button class="action-btn coral sm-btn" onclick="sendEmergencyNotification()">Notify Doctor</button>
+      <button class="action-btn outline-white sm-btn" onclick="showNearestHospital()">Nearest Hospital</button>
+    </div>
+  </div>
 
   <!-- ── Patient Hero Banner ── -->
   <section class="patient-hero" aria-label="Patient overview">
     <div class="hero-identity">
       <div class="avatar-ring">
-        <div class="avatar" id="pt-avatar">EM</div>
+        <div class="avatar" id="pt-avatar">AM</div>
       </div>
       <div class="hero-info">
-        <h1 id="pt-name" class="hero-name">Elena Martinez</h1>
-        <p id="pt-condition" class="hero-condition">Type 2 Diabetes · Age 54 · F</p>
+        <h1 id="pt-name" class="hero-name">Aarav Mehta</h1>
+        <p id="pt-condition" class="hero-condition">Type 2 Diabetes &amp; Nephropathy · Age 45 · M</p>
+        
+        <!-- Expanded profile details -->
+        <div class="pt-sub-details" id="pt-sub-details">
+          Blood Group: <strong id="pt-blood-group" style="color:var(--teal)">O+</strong> &nbsp;|&nbsp;
+          Height: <strong id="pt-height">174 cm</strong> &nbsp;|&nbsp;
+          BMI: <strong id="pt-bmi" style="color:var(--violet)">—</strong> &nbsp;|&nbsp;
+          Health Score: <strong id="pt-health-score" style="color:var(--emerald)">—</strong>
+        </div>
+
         <div class="hero-meta" id="hero-meta">
-          <span class="meta-pill" id="hero-physician">Dr. Sandra Patel</span>
-          <span class="meta-pill" id="hero-insurance">BCB-8821-ELM</span>
-          <span class="meta-pill appt" id="hero-appt">Next: 2025-08-15</span>
+          <span class="meta-pill" id="hero-physician">Dr. Sanjay Gupta</span>
+          <span class="meta-pill" id="hero-insurance">AB-PMJAY-9921-AAR</span>
+          <span class="meta-pill appt" id="hero-appt">Next: 2026-08-15</span>
+          <span class="meta-pill" id="hero-trend" style="background:var(--blue-dim);color:var(--blue)">Trend: Stable</span>
         </div>
       </div>
     </div>
+    
     <div class="hero-risk">
       <div class="risk-dial" id="risk-dial">
         <svg class="dial-svg" viewBox="0 0 80 80">
@@ -125,6 +320,7 @@
       </div>
       <span class="risk-badge" id="pt-risk-badge">Stable</span>
     </div>
+    
     <div class="hero-actions">
       <button class="action-btn emerald" onclick="openLogModal('vitals')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -149,250 +345,674 @@
     </div>
   </section>
 
-  <!-- ── Bento Metrics Grid ── -->
-  <section class="bento-grid" id="metrics-grid" aria-label="Vital signs">
-    <div class="metric-bento" id="mc-glucose">
-      <div class="metric-header">
-        <span class="metric-icon glucose-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 007-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 007 7z"/></svg>
-        </span>
-        <span class="metric-label">Blood Glucose</span>
-        <span class="metric-status" id="ms-glucose">—</span>
+  <!-- ── Patient Sub-Tabs Navigation ── -->
+  <nav class="portal-subnav" aria-label="Patient portal sub sections">
+    <button class="psub-btn active" id="psub-vitals" onclick="switchPatientSubTab('vitals')">Vitals Monitor</button>
+    <button class="psub-btn" id="psub-risk" onclick="switchPatientSubTab('risk')">Predictive Risk Engine</button>
+    <button class="psub-btn" id="psub-lifestyle" onclick="switchPatientSubTab('lifestyle')">Lifestyle Coach</button>
+    <button class="psub-btn" id="psub-symptoms" onclick="switchPatientSubTab('symptoms')">Symptom Checker</button>
+    <button class="psub-btn" id="psub-reports" onclick="switchPatientSubTab('reports')">Medical Report Analyzer</button>
+  </nav>
+
+  <!-- ── Subtab 1: Vitals Monitor ── -->
+  <div id="patient-subtab-vitals" class="patient-subtab active">
+    <!-- Bento Metrics Grid (12 Cards) -->
+    <section class="bento-grid" id="metrics-grid" aria-label="Vital signs monitor">
+      <!-- 1. Blood Glucose -->
+      <div class="metric-bento" id="mc-glucose">
+        <div class="metric-header">
+          <span class="metric-icon glucose-icon">🩸</span>
+          <span class="metric-label">Blood Sugar</span>
+          <span class="metric-status" id="ms-glucose">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-glucose">—</span>
+          <span class="metric-unit">mg/dL</span>
+        </div>
+        <div class="metric-sparkline" id="spark-glucose"></div>
+        <div class="metric-trend" id="mt-glucose"></div>
       </div>
-      <div class="metric-value-row">
-        <span class="metric-value" id="mv-glucose">—</span>
-        <span class="metric-unit">mg/dL</span>
+
+      <!-- 2. Blood Pressure -->
+      <div class="metric-bento" id="mc-bp">
+        <div class="metric-header">
+          <span class="metric-icon bp-icon">📈</span>
+          <span class="metric-label">Blood Pressure</span>
+          <span class="metric-status" id="ms-bp">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-bp">—</span>
+          <span class="metric-unit">mmHg</span>
+        </div>
+        <div class="metric-sparkline" id="spark-bp"></div>
+        <div class="metric-trend" id="mt-bp"></div>
       </div>
-      <div class="metric-sparkline" id="spark-glucose"></div>
-      <div class="metric-trend" id="mt-glucose"></div>
+
+      <!-- 3. Heart Rate -->
+      <div class="metric-bento" id="mc-hr">
+        <div class="metric-header">
+          <span class="metric-icon hr-icon">💓</span>
+          <span class="metric-label">Heart Rate</span>
+          <span class="metric-status" id="ms-hr">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-hr">—</span>
+          <span class="metric-unit">bpm <span class="heart-pulse" id="heart-icon">♥</span></span>
+        </div>
+        <div class="metric-sparkline" id="spark-hr"></div>
+        <div class="metric-trend" id="mt-hr"></div>
+      </div>
+
+      <!-- 4. Oxygen Saturation (SpO2) -->
+      <div class="metric-bento" id="mc-spo2">
+        <div class="metric-header">
+          <span class="metric-icon spo2-icon">💨</span>
+          <span class="metric-label">Blood Oxygen</span>
+          <span class="metric-status" id="ms-spo2">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-spo2">—</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <div class="spo2-bar-wrap">
+          <div class="spo2-bar"><div class="spo2-fill" id="spo2-fill"></div></div>
+        </div>
+        <div class="metric-trend" id="mt-spo2"></div>
+      </div>
+
+      <!-- 5. Body Temperature -->
+      <div class="metric-bento" id="mc-temp">
+        <div class="metric-header">
+          <span class="metric-icon temp-icon">🌡️</span>
+          <span class="metric-label">Body Temp</span>
+          <span class="metric-status" id="ms-temp">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-temp">—</span>
+          <span class="metric-unit">°C</span>
+        </div>
+        <div class="metric-sparkline" id="spark-temp"></div>
+        <div class="metric-trend" id="mt-temp"></div>
+      </div>
+
+      <!-- 6. Respiration Rate -->
+      <div class="metric-bento" id="mc-resp">
+        <div class="metric-header">
+          <span class="metric-icon resp-icon">🌬️</span>
+          <span class="metric-label">Respiration</span>
+          <span class="metric-status" id="ms-resp">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-resp">—</span>
+          <span class="metric-unit">/min</span>
+        </div>
+        <div class="metric-sparkline" id="spark-resp"></div>
+        <div class="metric-trend" id="mt-resp"></div>
+      </div>
+
+      <!-- 7. Weight -->
+      <div class="metric-bento" id="mc-weight">
+        <div class="metric-header">
+          <span class="metric-icon weight-icon">⚖️</span>
+          <span class="metric-label">Weight</span>
+          <span class="metric-status" id="ms-weight">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-weight">—</span>
+          <span class="metric-unit">kg</span>
+        </div>
+        <div class="metric-sparkline" id="spark-weight"></div>
+        <div class="metric-trend" id="mt-weight"></div>
+      </div>
+
+      <!-- 8. Sleep Hours -->
+      <div class="metric-bento" id="mc-sleep">
+        <div class="metric-header">
+          <span class="metric-icon sleep-icon">🌙</span>
+          <span class="metric-label">Sleep Hours</span>
+          <span class="metric-status" id="ms-sleep">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-sleep">—</span>
+          <span class="metric-unit">hrs</span>
+        </div>
+        <div class="spo2-bar-wrap">
+          <div class="spo2-bar"><div class="spo2-fill" id="sleep-fill" style="width:75%"></div></div>
+        </div>
+        <div class="metric-trend" id="mt-sleep"></div>
+      </div>
+
+      <!-- 9. Stress Level -->
+      <div class="metric-bento" id="mc-stress">
+        <div class="metric-header">
+          <span class="metric-icon stress-icon">🧘</span>
+          <span class="metric-label">Stress Level</span>
+          <span class="metric-status" id="ms-stress">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-stress">—</span>
+          <span class="metric-unit">/10</span>
+        </div>
+        <div class="metric-sparkline" id="spark-stress"></div>
+        <div class="metric-trend" id="mt-stress"></div>
+      </div>
+
+      <!-- 10. Activity Level -->
+      <div class="metric-bento" id="mc-activity">
+        <div class="metric-header">
+          <span class="metric-icon activity-icon">🏃</span>
+          <span class="metric-label">Activity (Steps)</span>
+          <span class="metric-status" id="ms-activity">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-activity">—</span>
+          <span class="metric-unit">steps</span>
+        </div>
+        <div class="metric-sparkline" id="spark-activity"></div>
+        <div class="metric-trend" id="mt-activity"></div>
+      </div>
+
+      <!-- 11. Water Intake -->
+      <div class="metric-bento" id="mc-water">
+        <div class="metric-header">
+          <span class="metric-icon water-icon">💧</span>
+          <span class="metric-label">Water Intake</span>
+          <span class="metric-status" id="ms-water">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-water">—</span>
+          <span class="metric-unit">mL</span>
+        </div>
+        <div class="spo2-bar-wrap">
+          <div class="spo2-bar"><div class="spo2-fill" id="water-fill" style="width:60%"></div></div>
+        </div>
+        <div class="metric-trend" id="mt-water"></div>
+      </div>
+
+      <!-- 12. BMI Metric -->
+      <div class="metric-bento" id="mc-bmimeter">
+        <div class="metric-header">
+          <span class="metric-icon bmi-icon">📋</span>
+          <span class="metric-label">BMI index</span>
+          <span class="metric-status" id="ms-bmi">—</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="mv-bmi">—</span>
+          <span class="metric-unit">kg/m²</span>
+        </div>
+        <div class="metric-trend" style="color:var(--text2);font-size:0.75rem;margin-top:14px">
+          Category: <span id="mv-bmi-cat" style="font-weight:700">Normal</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts + Adherence Row -->
+    <section class="charts-row">
+      <div class="chart-card glass-card">
+        <div class="card-header">
+          <span class="card-title">Vitals Trend — Last 14 Days</span>
+          <div class="chart-tabs">
+            <button class="ctab active" onclick="switchChart('glucose',this)">Glucose</button>
+            <button class="ctab" onclick="switchChart('bp',this)">BP</button>
+            <button class="ctab" onclick="switchChart('hr',this)">Heart Rate</button>
+            <button class="ctab" onclick="switchChart('weight',this)">Weight</button>
+          </div>
+        </div>
+        <canvas id="vitals-chart" height="100"></canvas>
+      </div>
+      <div class="chart-card glass-card adherence-card">
+        <div class="card-header">
+          <span class="card-title">Medication Adherence</span>
+          <span class="adherence-score">Today: <strong id="adherence-pct">—%</strong></span>
+        </div>
+        <canvas id="med-chart" height="140"></canvas>
+        <div class="adherence-pills" id="adherence-pills"></div>
+      </div>
+    </section>
+
+    <!-- Telemetry Deck + Outcome Sliders -->
+    <section class="telemetry-outcomes-row">
+      <!-- IoT Console -->
+      <div class="glass-card telemetry-card">
+        <div class="card-header">
+          <span class="card-title">IoT Telemetry Streaming Hub</span>
+          <div class="telemetry-controls" style="display: flex; gap: 4px; align-items: center;">
+            <button class="tel-mode-btn active tel-mode-simulated" data-mode="simulated" onclick="changeTelemetryMode('simulated')">Simulated</button>
+            <button class="tel-mode-btn tel-mode-live" data-mode="live" onclick="changeTelemetryMode('live')">Live Outpatient</button>
+            <button class="tel-mode-btn tel-mode-external" data-mode="external" onclick="changeTelemetryMode('external')">External IoT Deck</button>
+            <button class="action-btn sm-btn emerald" onclick="syncWearablesTelemetry()" style="height: 28px; padding: 2px 10px;">🔄 Sync Watch</button>
+          </div>
+        </div>
+        <div class="telemetry-console-wrap">
+          <div class="telemetry-console-header">Real-Time Packet Stream Logs</div>
+          <div id="telemetry-stream-console" class="telemetry-console">
+            <div class="console-line"><span class="console-time">[00:00:00]</span> <span class="console-msg">Telemetry system active. Stream listening on /api/live-vitals...</span></div>
+          </div>
+        </div>
+        
+        <!-- IoT Input Deck -->
+        <div id="iot-device-deck" class="iot-device-deck" style="display: none;">
+          <div class="deck-header">Trigger IoT Signal Payload (POST Webhook Simulator)</div>
+          <div class="deck-inputs">
+            <div class="deck-input-col"><label>Glucose</label><input type="number" id="deck-gluc" value="130" /></div>
+            <div class="deck-input-col"><label>BP Sys</label><input type="number" id="deck-sys" value="125" /></div>
+            <div class="deck-input-col"><label>BP Dia</label><input type="number" id="deck-dia" value="82" /></div>
+            <div class="deck-input-col"><label>Heart Rate</label><input type="number" id="deck-hr" value="72" /></div>
+            <div class="deck-input-col"><label>SpO₂</label><input type="number" step="0.1" id="deck-spo2" value="98.5" /></div>
+            <div class="deck-input-col"><label>Weight</label><input type="number" step="0.1" id="deck-weight" value="72.0" /></div>
+          </div>
+          <button class="action-btn emerald sm-btn" onclick="sendSimulatedIoTRequest(
+            parseFloat(document.getElementById('deck-gluc').value),
+            parseFloat(document.getElementById('deck-sys').value),
+            parseFloat(document.getElementById('deck-dia').value),
+            parseFloat(document.getElementById('deck-hr').value),
+            parseFloat(document.getElementById('deck-spo2').value),
+            parseFloat(document.getElementById('deck-weight').value)
+          )">Simulate IoT Event</button>
+        </div>
+      </div>
+
+      <!-- Outcomes Slider -->
+      <div class="glass-card outcomes-card">
+        <div class="card-header">
+          <span class="card-title">Lifestyle Outcome Prognosis Simulator</span>
+          <span class="vector-badge" id="outcomes-life-expectancy">70.2 years</span>
+        </div>
+        <div class="outcomes-metrics">
+          <div class="outcomes-metric-row">
+            <span class="outcomes-label">Cardiovascular Risk Indicator:</span>
+            <span class="outcomes-value" id="outcomes-cvd-risk">12% (Low)</span>
+          </div>
+          <div class="outcomes-metric-row">
+            <span class="outcomes-label">Projected Longevity Shift:</span>
+            <span id="outcomes-life-diff" class="outcomes-diff positive">(+0.0 yrs)</span>
+          </div>
+        </div>
+        <div class="sliders-deck">
+          <div class="slider-row">
+            <div class="slider-label-group"><label>Daily Activity Steps</label><span class="slider-val" id="lbl-steps">5000</span></div>
+            <input type="range" class="outcome-slider" min="1000" max="15000" step="500" value="5000" oninput="updateOutcomeParameter('outcomeSteps', this.value)" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-group"><label>Dietary Salt (g/day)</label><span class="slider-val" id="lbl-salt">9g</span></div>
+            <input type="range" class="outcome-slider" min="2" max="15" step="0.5" value="9" oninput="updateOutcomeParameter('outcomeSalt', this.value)" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-group"><label>Dietary Carbs %</label><span class="slider-val" id="lbl-carbs">60%</span></div>
+            <input type="range" class="outcome-slider" min="30" max="80" step="1" value="60" oninput="updateOutcomeParameter('outcomeCarbs', this.value)" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Row (Medication Tracker & Logs) -->
+    <section class="bottom-row">
+      <div class="glass-card med-card">
+        <div class="card-header">
+          <span class="card-title">Today's Medications</span>
+          <span class="muted-label" id="med-today-date"></span>
+        </div>
+        
+        <!-- Missed medicine compliance tracker banner -->
+        <div class="missed-tracker-banner" id="missed-tracker-banner" style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.78rem;color:var(--text2)">Weekly Medication Compliance: <strong id="compliance-pct" style="color:var(--teal)">100%</strong></span>
+          <span id="missed-warning-badge" class="adh-pill" style="font-size:0.68rem;padding:2px 8px;border-radius:4px;background:var(--blue-dim);color:var(--blue)">0 Missed</span>
+        </div>
+
+        <!-- Drug interaction warning alert -->
+        <div class="interaction-alert" id="interaction-alert" style="display: none; background: rgba(255,75,110,0.1); border: 1px solid rgba(255,75,110,0.3); padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 0.78rem; color: var(--coral)">
+          ⚠️ <strong>Drug Interaction Warning:</strong> Potential contraindicated medications detected. Please consult Dr. Patel before taking them together.
+        </div>
+
+        <div id="med-list" class="med-list"></div>
+      </div>
+      <div class="glass-card logs-card">
+        <div class="card-header">
+          <span class="card-title">Recent Activity Log</span>
+          <button class="text-btn" onclick="openLogModal('vitals')">+ Add Entry</button>
+        </div>
+        <div id="recent-logs" class="recent-logs"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── Subtab 2: Predictive Risk Engine ── -->
+  <div id="patient-subtab-risk" class="patient-subtab">
+    <div class="subtab-header">
+      <h2>Predictive Risk Engine</h2>
+      <p class="muted-label">AI models forecast chronic organ complications and hospitalization probabilities based on longitudinal telemetry.</p>
+    </div>
+    
+    <div class="risk-engine-grid">
+      <!-- Risk Indicators Left Panel -->
+      <div class="risk-indicators-panel">
+        <!-- Cardiac Event Risk Card -->
+        <div class="risk-gauge-card glass-card" id="rk-cardiac">
+          <div class="rg-header">
+            <span class="rg-icon">🫀</span>
+            <div>
+              <h4>Heart Attack &amp; CAD Risk</h4>
+              <p class="muted-label">10-Year Cardiovascular Event probability</p>
+            </div>
+            <span class="rg-badge risk-normal" id="rk-badge-cardiac">Low Risk</span>
+          </div>
+          <div class="rg-gauge-row">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill progress-stable" id="rk-fill-cardiac" style="width: 12%"></div>
+            </div>
+            <span class="rg-score" id="rk-score-cardiac">12%</span>
+          </div>
+          <div class="rg-details">
+            Confidence Score: <strong id="rk-conf-cardiac">92%</strong> &nbsp;|&nbsp; Severity: <span id="rk-sev-cardiac" class="font-emerald">Minimal</span>
+          </div>
+        </div>
+
+        <!-- Stroke Risk Card -->
+        <div class="risk-gauge-card glass-card" id="rk-stroke">
+          <div class="rg-header">
+            <span class="rg-icon">🧠</span>
+            <div>
+              <h4>Ischemic Stroke Risk</h4>
+              <p class="muted-label">Cerebrovascular risk profile</p>
+            </div>
+            <span class="rg-badge risk-normal" id="rk-badge-stroke">Low Risk</span>
+          </div>
+          <div class="rg-gauge-row">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill progress-stable" id="rk-fill-stroke" style="width: 8%"></div>
+            </div>
+            <span class="rg-score" id="rk-score-stroke">8%</span>
+          </div>
+          <div class="rg-details">
+            Confidence Score: <strong id="rk-conf-stroke">88%</strong> &nbsp;|&nbsp; Severity: <span id="rk-sev-stroke" class="font-emerald">Minimal</span>
+          </div>
+        </div>
+
+        <!-- Kidney Complication Card -->
+        <div class="risk-gauge-card glass-card" id="rk-renal">
+          <div class="rg-header">
+            <span class="rg-icon">🩺</span>
+            <div>
+              <h4>Kidney Complications (CKD)</h4>
+              <p class="muted-label">Diabetic nephropathy / microalbuminuria progression</p>
+            </div>
+            <span class="rg-badge risk-normal" id="rk-badge-renal">Low Risk</span>
+          </div>
+          <div class="rg-gauge-row">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill progress-stable" id="rk-fill-renal" style="width: 15%"></div>
+            </div>
+            <span class="rg-score" id="rk-score-renal">15%</span>
+          </div>
+          <div class="rg-details">
+            Confidence Score: <strong id="rk-conf-renal">85%</strong> &nbsp;|&nbsp; Severity: <span id="rk-sev-renal" class="font-emerald">Minimal</span>
+          </div>
+        </div>
+
+        <!-- Hospitalization Risk Card -->
+        <div class="risk-gauge-card glass-card" id="rk-hospital">
+          <div class="rg-header">
+            <span class="rg-icon">🏥</span>
+            <div>
+              <h4>Hospitalization Probability</h4>
+              <p class="muted-label">30-Day acute care hospitalization forecast</p>
+            </div>
+            <span class="rg-badge risk-normal" id="rk-badge-hospital">Stable</span>
+          </div>
+          <div class="rg-gauge-row">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill progress-stable" id="rk-fill-hospital" style="width: 5%"></div>
+            </div>
+            <span class="rg-score" id="rk-score-hospital">5%</span>
+          </div>
+          <div class="rg-details">
+            Confidence Score: <strong id="rk-conf-hospital">90%</strong> &nbsp;|&nbsp; Severity: <span id="rk-sev-hospital" class="font-emerald">Minimal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Action Recommendations Panel -->
+      <div class="risk-recs-panel glass-card">
+        <div class="card-header"><span class="card-title">AI Prognostic Analysis &amp; Guidelines</span></div>
+        <div class="recs-body" id="risk-recs-content">
+          <div class="rec-intro">
+            <p>Predictive analysis is calculated dynamically from patient age, chronic diseases, metabolic control, and activity steps telemetry. Below is the clinical guideline recommendations based on the current metrics.</p>
+          </div>
+          <ul class="rec-list" id="risk-recommendations-list">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Subtab 3: Lifestyle Coach ── -->
+  <div id="patient-subtab-lifestyle" class="patient-subtab">
+    <div class="subtab-header">
+      <h2>Lifestyle Coach &amp; Wellness Planner</h2>
+      <p class="muted-label">Dynamic health parameters are analyzed by IBM watsonx.ai Studio to curate customized diet, fitness, and recovery plans.</p>
     </div>
 
-    <div class="metric-bento" id="mc-bp">
-      <div class="metric-header">
-        <span class="metric-icon bp-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        </span>
-        <span class="metric-label">Blood Pressure</span>
-        <span class="metric-status" id="ms-bp">—</span>
+    <div class="lifestyle-layout">
+      <!-- Goals tracking left column -->
+      <div class="lifestyle-goals-column">
+        <!-- Daily Goals Card -->
+        <div class="glass-card goals-card-widget">
+          <div class="card-header"><span class="card-title">Daily Hydration &amp; Sleep Tracking</span></div>
+          <div class="goals-body">
+            <div class="goal-item-row">
+              <div class="goal-meta">
+                <span>Hydration Tracker</span>
+                <strong id="life-water-val">1200 / 3000 mL</strong>
+              </div>
+              <div class="goal-progress"><div class="goal-progress-fill color-blue" id="life-water-bar" style="width: 40%"></div></div>
+            </div>
+            
+            <div class="goal-item-row" style="margin-top:1.5rem">
+              <div class="goal-meta">
+                <span>Sleep Target</span>
+                <strong id="life-sleep-val">6.2 / 8.0 Hrs</strong>
+              </div>
+              <div class="goal-progress"><div class="goal-progress-fill color-violet" id="life-sleep-bar" style="width: 77%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Checklist Challenges -->
+        <div class="glass-card checklist-card-widget" style="margin-top:1.5rem">
+          <div class="card-header"><span class="card-title">Daily Challenges &amp; Goals</span></div>
+          <div class="checklist-body">
+            <div class="check-item">
+              <input type="checkbox" id="chk-steps" />
+              <label for="chk-steps">Complete Step Target (5,000 steps)</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" id="chk-salt" />
+              <label for="chk-salt">Restrict daily salt intake (&lt; 5g)</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" id="chk-water" />
+              <label for="chk-water">Drink 2.5 Liters of water</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" id="chk-med" />
+              <label for="chk-med">Log all scheduled medications</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" id="chk-stress" />
+              <label for="chk-stress">Complete 10 mins deep breathing session</label>
+            </div>
+          <!-- Mood Tracker -->
+          <div class="glass-card mood-card-widget" style="margin-top:1.5rem">
+            <div class="card-header"><span class="card-title">Mood Tracker</span></div>
+            <div class="mood-body" style="padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <p class="muted-label">How are you feeling today? Mood affects cardiovascular tone and glycemic recovery.</p>
+              <div class="mood-emojis" style="display: flex; justify-content: space-between; font-size: 1.6rem; padding: 0.2rem 0;">
+                <span class="mood-emoji-btn" onclick="logMood('happy', '😊')" title="Happy" style="cursor:pointer; transition: transform 0.2s;">😊</span>
+                <span class="mood-emoji-btn" onclick="logMood('calm', '🧘')" title="Calm" style="cursor:pointer; transition: transform 0.2s;">🧘</span>
+                <span class="mood-emoji-btn" onclick="logMood('tired', '😴')" title="Tired" style="cursor:pointer; transition: transform 0.2s;">😴</span>
+                <span class="mood-emoji-btn" onclick="logMood('anxious', '😟')" title="Anxious" style="cursor:pointer; transition: transform 0.2s;">😟</span>
+                <span class="mood-emoji-btn" onclick="logMood('stressed', '😫')" title="Stressed" style="cursor:pointer; transition: transform 0.2s;">😫</span>
+              </div>
+              <div id="mood-status-label" class="muted-label" style="font-size:0.78rem; font-weight:600; text-align:center; color:var(--teal)">Latest: None logged today</div>
+            </div>
+          </div>
+
+          <!-- Food Nutri-Scanner -->
+          <div class="glass-card food-scanner-widget" style="margin-top:1.5rem">
+            <div class="card-header"><span class="card-title">AI Food Nutri-Scanner</span></div>
+            <div class="scanner-body" style="padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <p class="muted-label">Scan your meal photo. IBM watsonx.ai Studio checks glycemic suitability and sodium levels.</p>
+              <div class="dropzone" id="food-dropzone" onclick="document.getElementById('food-file-input').click()" style="padding: 1rem; border-style: dashed; text-align: center; border-color: var(--glass-border); border-radius: var(--radius-sm);">
+                <input type="file" id="food-file-input" style="display: none;" onchange="handleFoodScanned(this.files)" accept="image/*" />
+                <div class="dropzone-text" style="font-size: 0.8rem; cursor: pointer;">
+                  <span>📸</span> Click to upload food picture
+                </div>
+              </div>
+              <div id="food-scanner-result" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 8px; border-radius: var(--radius-sm); font-size: 0.8rem; line-height: 1.4;">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <div class="metric-value-row">
-        <span class="metric-value" id="mv-bp">—</span>
-        <span class="metric-unit">mmHg</span>
+
+      <!-- Disease Progress Timeline (spans full width) -->
+      <div class="glass-card timeline-card-widget" style="margin-top:1.5rem; width:100%;">
+        <div class="card-header"><span class="card-title">Disease Management Progress Timeline</span></div>
+        <div class="timeline-body" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+          <div class="timeline" id="patient-timeline" style="position: relative; padding-left: 2rem; border-left: 2px solid var(--glass-border); display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
       </div>
-      <div class="metric-sparkline" id="spark-bp"></div>
-      <div class="metric-trend" id="mt-bp"></div>
+
+      <!-- Granite plan right column -->
+      <div class="lifestyle-plan-column glass-card">
+        <div class="card-header">
+          <span class="card-title">Personalized Lifestyle Coach — IBM watsonx.ai Studio Plan</span>
+          <button class="action-btn blue sm-btn" onclick="generateAISchedulePlan()">Generate AI Coach Plan</button>
+        </div>
+        
+        <div class="lifestyle-plan-body" id="lifestyle-coach-output">
+          <div class="coach-placeholder">
+            <p>No active personalized plan generated. Click "Generate AI Coach Plan" to instruct IBM watsonx.ai Studio to construct custom diet and exercise regimes based on your metabolic parameters.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Subtab 4: Symptom Checker ── -->
+  <div id="patient-subtab-symptoms" class="patient-subtab">
+    <div class="subtab-header">
+      <h2>watsonx.ai Studio Symptom Checker &amp; Triage</h2>
+      <p class="muted-label">Input your current symptoms. IBM watsonx.ai Studio parses clinical descriptions, predicts complications, and advises immediate care.</p>
     </div>
 
-    <div class="metric-bento" id="mc-hr">
-      <div class="metric-header">
-        <span class="metric-icon hr-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-        </span>
-        <span class="metric-label">Heart Rate</span>
-        <span class="metric-status" id="ms-hr">—</span>
+    <div class="symptoms-grid">
+      <!-- Input Panel -->
+      <div class="symptom-input-panel glass-card">
+        <div class="card-header"><span class="card-title">Describe Symptoms</span></div>
+        <div class="sip-body">
+          <label for="symptom-text">What are you feeling today?</label>
+          <textarea id="symptom-text" rows="8" placeholder="e.g. I have a dry cough, shortness of breath which worsens when I climb stairs, and my chest feels tight since yesterday."></textarea>
+          
+          <div class="sip-examples">
+            <span class="muted-label">Common prompts:</span>
+            <button class="tag-example" onclick="setSymptomPrompt('Cough and shortness of breath with mild wheezing sound')">Wheezing/COPD</button>
+            <button class="tag-example" onclick="setSymptomPrompt('Mild pain in left foot, tingling sensation in toes, and dry skin')">Numbness/Nephropathy</button>
+            <button class="tag-example" onclick="setSymptomPrompt('Sudden mild dizziness, headache at the back of neck, and blurry vision')">Headache/Hypertension</button>
+          </div>
+
+          <button class="action-btn emerald" style="width: 100%; justify-content: center; margin-top: 1rem;" onclick="runGraniteSymptomChecker()">
+            Run IBM watsonx.ai Studio Analysis
+          </button>
+        </div>
       </div>
-      <div class="metric-value-row">
-        <span class="metric-value" id="mv-hr">—</span>
-        <span class="metric-unit">bpm <span class="heart-pulse" id="heart-icon">♥</span></span>
+
+      <!-- Analysis Results Panel -->
+      <div class="symptom-result-panel glass-card">
+        <div class="card-header"><span class="card-title">Triage &amp; Clinical Recommendation</span></div>
+        <div class="srp-body" id="symptom-result-output">
+          <div class="srp-placeholder">
+            <p>Awaiting symptom submission. Results are analyzed against clinical databases and regional diagnostic models.</p>
+          </div>
+        </div>
       </div>
-      <div class="metric-sparkline" id="spark-hr"></div>
-      <div class="metric-trend" id="mt-hr"></div>
+    </div>
+  </div>
+
+  <!-- ── Subtab 5: Medical Report Analyzer ── -->
+  <div id="patient-subtab-reports" class="patient-subtab">
+    <div class="subtab-header">
+      <h2>Medical Report Analyzer (IBM COS)</h2>
+      <p class="muted-label">Upload medical lab reports, prescriptions, or clinical summaries. Text is extracted and indexed inside secure IBM Cloud Object Storage.</p>
     </div>
 
-    <div class="metric-bento" id="mc-spo2">
-      <div class="metric-header">
-        <span class="metric-icon spo2-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
-        </span>
-        <span class="metric-label">SpO₂</span>
-        <span class="metric-status" id="ms-spo2">—</span>
+    <div class="reports-grid">
+      <!-- Upload Panel -->
+      <div class="upload-panel glass-card">
+        <div class="card-header"><span class="card-title">Document Upload</span></div>
+        <div class="up-body">
+          <div class="dropzone" id="dropzone" onclick="document.getElementById('report-file-input').click()">
+            <input type="file" id="report-file-input" style="display: none;" onchange="handleFileSelected(this.files)" accept=".pdf,image/*,.txt" />
+            <div class="dropzone-text">
+              <span class="dropzone-icon">📁</span>
+              <h3>Drag &amp; Drop medical file</h3>
+              <p>Supports PDF, JPEG, PNG, or TXT up to 10MB</p>
+            </div>
+          </div>
+          <div id="upload-status-bar" class="upload-status-bar" style="display: none;">
+            <div class="status-indicator">Uploading...</div>
+            <div class="status-progress"><div class="status-progress-fill" id="upload-progress-fill"></div></div>
+          </div>
+          <p class="muted-label" style="font-size: 0.72rem; line-height: 1.4; margin-top: 0.8rem;">
+            * Reports are uploaded to an encrypted bucket on IBM Cloud Object Storage (Lite Tier). Fallback local uploads active when COS credentials are not saved.
+          </p>
+        </div>
       </div>
-      <div class="metric-value-row">
-        <span class="metric-value" id="mv-spo2">—</span>
-        <span class="metric-unit">%</span>
+
+      <!-- Analyzer Display Panel -->
+      <div class="analyzer-panel glass-card">
+        <div class="card-header">
+          <span class="card-title" id="analyzer-title">AI Analysis &amp; Findings</span>
+          <button class="action-btn blue sm-btn" id="btn-run-analysis" style="display: none;" onclick="analyzeSelectedReport()">Extract Findings</button>
+        </div>
+        <div class="ap-body" id="analyzer-output-pane">
+          <div class="ap-placeholder">
+            <p>Select an uploaded document from the history panel below or upload a new one to run text parsing and extraction.</p>
+          </div>
+        </div>
       </div>
-      <div class="spo2-bar-wrap">
-        <div class="spo2-bar"><div class="spo2-fill" id="spo2-fill"></div></div>
-      </div>
-      <div class="metric-trend" id="mt-spo2"></div>
     </div>
 
-    <div class="metric-bento" id="mc-weight">
-      <div class="metric-header">
-        <span class="metric-icon weight-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a3 3 0 100 6 3 3 0 000-6z"/><path d="M3 21h18l-2-9H5L3 21z"/></svg>
-        </span>
-        <span class="metric-label">Weight</span>
-        <span class="metric-status" id="ms-weight">—</span>
-      </div>
-      <div class="metric-value-row">
-        <span class="metric-value" id="mv-weight">—</span>
-        <span class="metric-unit">kg</span>
-      </div>
-      <div class="metric-sparkline" id="spark-weight"></div>
-      <div class="metric-trend" id="mt-weight"></div>
-    </div>
-  </section>
-
-  <!-- ── Charts + Medication Row ── -->
-  <section class="charts-row">
-    <div class="chart-card glass-card">
+    <!-- Reports History Grid Row -->
+    <div class="reports-history-widget glass-card" style="margin-top: 1.5rem;">
       <div class="card-header">
-        <span class="card-title">Vitals Trend — Last 14 Days</span>
-        <div class="chart-tabs">
-          <button class="ctab active" onclick="switchChart('glucose',this)">Glucose</button>
-          <button class="ctab" onclick="switchChart('bp',this)">BP</button>
-          <button class="ctab" onclick="switchChart('hr',this)">Heart Rate</button>
-          <button class="ctab" onclick="switchChart('weight',this)">Weight</button>
-        </div>
+        <span class="card-title">Uploaded &amp; Generated Documents Library</span>
+        <button class="text-btn" onclick="loadPatientReports()">🔄 Refresh Registry</button>
       </div>
-      <canvas id="vitals-chart" height="100"></canvas>
-    </div>
-    <div class="chart-card glass-card adherence-card">
-      <div class="card-header">
-        <span class="card-title">Medication Adherence</span>
-        <span class="adherence-score">Today: <strong id="adherence-pct">—%</strong></span>
-      </div>
-      <canvas id="med-chart" height="140"></canvas>
-      <div class="adherence-pills" id="adherence-pills"></div>
-    </div>
-  </section>
-
-  <!-- ── IoT Telemetry & Lifestyle Prognosis Outcomes Simulator Row ── -->
-  <section class="telemetry-outcomes-row">
-    <!-- IoT Telemetry Console -->
-    <div class="glass-card telemetry-card">
-      <div class="card-header">
-        <span class="card-title">IoT Telemetry Streaming Hub</span>
-        <div class="telemetry-controls">
-          <button class="tel-mode-btn active tel-mode-simulated" data-mode="simulated" onclick="changeTelemetryMode('simulated')">Simulated</button>
-          <button class="tel-mode-btn tel-mode-live" data-mode="live" onclick="changeTelemetryMode('live')">Live Outpatient</button>
-          <button class="tel-mode-btn tel-mode-external" data-mode="external" onclick="changeTelemetryMode('external')">External IoT Deck</button>
-        </div>
-      </div>
-      <div class="telemetry-console-wrap">
-        <div class="telemetry-console-header">Real-Time Packet Stream Logs</div>
-        <div id="telemetry-stream-console" class="telemetry-console">
-          <div class="console-line"><span class="console-time">[00:00:00]</span> <span class="console-msg">Telemetry system active. Stream listening on /api/live-vitals...</span></div>
-        </div>
-      </div>
-      <!-- IoT Trigger Console Deck -->
-      <div id="iot-device-deck" class="iot-device-deck" style="display: none;">
-        <div class="deck-header">Trigger IoT Signal Payload (POST Webhook Simulator)</div>
-        <div class="deck-inputs">
-          <div class="deck-input-col">
-            <label>Glucose (mg/dL)</label>
-            <input type="number" id="deck-gluc" value="130" />
-          </div>
-          <div class="deck-input-col">
-            <label>BP Systolic (mmHg)</label>
-            <input type="number" id="deck-sys" value="125" />
-          </div>
-          <div class="deck-input-col">
-            <label>BP Diastolic (mmHg)</label>
-            <input type="number" id="deck-dia" value="82" />
-          </div>
-          <div class="deck-input-col">
-            <label>Heart Rate (bpm)</label>
-            <input type="number" id="deck-hr" value="72" />
-          </div>
-          <div class="deck-input-col">
-            <label>SpO₂ (%)</label>
-            <input type="number" step="0.1" id="deck-spo2" value="98.5" />
-          </div>
-          <div class="deck-input-col">
-            <label>Weight (kg)</label>
-            <input type="number" step="0.1" id="deck-weight" value="72.0" />
-          </div>
-        </div>
-        <button class="action-btn emerald sm-btn" onclick="sendSimulatedIoTRequest(
-          parseFloat(document.getElementById('deck-gluc').value),
-          parseFloat(document.getElementById('deck-sys').value),
-          parseFloat(document.getElementById('deck-dia').value),
-          parseFloat(document.getElementById('deck-hr').value),
-          parseFloat(document.getElementById('deck-spo2').value),
-          parseFloat(document.getElementById('deck-weight').value)
-        )">Simulate IoT Event</button>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Document Name</th>
+              <th>Upload Date</th>
+              <th>File Size</th>
+              <th>Storage Source</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reports-history-rows">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
       </div>
     </div>
-
-    <!-- Lifestyle Outcomes Simulator -->
-    <div class="glass-card outcomes-card">
-      <div class="card-header">
-        <span class="card-title">Lifestyle Outcome Prognosis Simulator</span>
-        <span class="vector-badge" id="outcomes-life-expectancy">70.2 years</span>
-      </div>
-      
-      <div class="outcomes-metrics">
-        <div class="outcomes-metric-row">
-          <span class="outcomes-label">South Asian 10-Yr Cardiovascular Risk:</span>
-          <span class="outcomes-value" id="outcomes-cvd-risk">12% (Low)</span>
-        </div>
-        <div class="outcomes-metric-row">
-          <span class="outcomes-label">Projected Longevity Shift:</span>
-          <span id="outcomes-life-diff" class="outcomes-diff positive">(+0.0 yrs vs regional average)</span>
-        </div>
-      </div>
-
-      <div class="sliders-deck">
-        <div class="slider-row">
-          <div class="slider-label-group">
-            <label>Daily Activity Steps</label>
-            <span class="slider-val" id="lbl-steps">5000 steps</span>
-          </div>
-          <input type="range" class="outcome-slider" min="1000" max="15000" step="500" value="5000" oninput="updateOutcomeParameter('outcomeSteps', this.value)" />
-        </div>
-        <div class="slider-row">
-          <div class="slider-label-group">
-            <label>Dietary Salt Intake (g/day)</label>
-            <span class="slider-val" id="lbl-salt">9g</span>
-          </div>
-          <input type="range" class="outcome-slider" min="2" max="15" step="0.5" value="9" oninput="updateOutcomeParameter('outcomeSalt', this.value)" />
-        </div>
-        <div class="slider-row">
-          <div class="slider-label-group">
-            <label>Dietary Carbohydrates %</label>
-            <span class="slider-val" id="lbl-carbs">60%</span>
-          </div>
-          <input type="range" class="outcome-slider" min="30" max="80" step="1" value="60" oninput="updateOutcomeParameter('outcomeCarbs', this.value)" />
-        </div>
-      </div>
-
-      <div class="progression-metrics">
-        <div class="prog-heading">Predicted Organ Complication Incidence Rate</div>
-        <div class="prog-metric">
-          <div class="prog-metric-meta"><span>Diabetic Nephropathy / CKD</span><span id="prog-renal">15%</span></div>
-          <div class="prog-bar-container"><div class="progress-fill" id="prog-bar-renal" style="width: 15%"></div></div>
-        </div>
-        <div class="prog-metric">
-          <div class="prog-metric-meta"><span>Ischemic Stroke Risk</span><span id="prog-stroke">12%</span></div>
-          <div class="prog-bar-container"><div class="progress-fill" id="prog-bar-stroke" style="width: 12%"></div></div>
-        </div>
-        <div class="prog-metric">
-          <div class="prog-metric-meta"><span>Coronary CAD Event</span><span id="prog-cardiac">20%</span></div>
-          <div class="prog-bar-container"><div class="progress-fill" id="prog-bar-cardiac" style="width: 20%"></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── Medication Tracker + Recent Logs ── -->
-  <section class="bottom-row">
-    <div class="glass-card med-card">
-      <div class="card-header">
-        <span class="card-title">Today's Medications</span>
-        <span class="muted-label" id="med-today-date"></span>
-      </div>
-      <div id="med-list" class="med-list"></div>
-    </div>
-    <div class="glass-card logs-card">
-      <div class="card-header">
-        <span class="card-title">Recent Activity Log</span>
-        <button class="text-btn" onclick="openLogModal('vitals')">+ Add Entry</button>
-      </div>
-      <div id="recent-logs" class="recent-logs"></div>
-    </div>
-  </section>
+  </div>
 
 </main>
 
@@ -401,8 +1021,8 @@
 
   <section class="provider-hero glass-card">
     <div>
-      <h2 class="prov-title">Clinical Overview</h2>
-      <p class="muted-label">AI-triaged patient list · Click any patient for detailed analytics</p>
+      <h2 class="prov-title">Clinical Triage Overview</h2>
+      <p class="muted-label">AI-triaged patient list · Click any patient for detailed longitudinal trends and reports</p>
     </div>
     <div class="prov-stats" id="prov-stats">
       <div class="stat-chip critical-chip"><span id="stat-critical">0</span><small>Critical</small></div>
@@ -421,29 +1041,58 @@
       <canvas id="prov-chart" height="110"></canvas>
       <div id="prov-log-table"></div>
     </div>
+    
+    <!-- Targets Card -->
     <div class="glass-card targets-card">
       <div class="card-header">
         <span class="card-title">Clinical Target Ranges</span>
-        <button class="action-btn emerald sm-btn" onclick="saveTargets()">Save</button>
+        <button class="action-btn emerald sm-btn" onclick="saveTargets()">Save Targets</button>
       </div>
       <div id="targets-form" class="targets-form"></div>
     </div>
   </div>
 
   <div class="provider-bottom-row">
-    <div class="glass-card ai-report-card">
+    <!-- Reports Tracking Panel for Doctor -->
+    <div class="glass-card prov-reports-card">
       <div class="card-header">
-        <span class="card-title">IBM Granite — Clinical Report</span>
-        <button class="action-btn blue sm-btn" onclick="generateClinicalSummary()">Generate</button>
+        <span class="card-title">Patient Documents &amp; Reports History</span>
       </div>
-      <div id="clinical-summary-output" class="ai-output muted-label">Click "Generate" to produce an IBM Granite clinical report for the selected patient.</div>
+      <div class="prov-reports-list-wrap">
+        <table class="prov-reports-table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Date</th>
+              <th>Source</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="prov-reports-rows">
+            <tr><td colspan="4" class="muted-label" style="text-align:center;padding:1.5rem">Select a patient to view files</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- Active Alarms -->
     <div class="glass-card alarm-card">
       <div class="card-header">
-        <span class="card-title">Active Alarms</span>
+        <span class="card-title">Active Alarms Dashboard</span>
         <button class="text-btn" onclick="clearAlerts()">Clear All</button>
       </div>
       <div id="alarm-dashboard"></div>
+    </div>
+  </div>
+
+  <!-- RAG / clinical reports generation row -->
+  <div class="provider-bottom-row" style="grid-template-columns: 1fr; margin-top: 1.5rem;">
+    <div class="glass-card ai-report-card">
+      <div class="card-header">
+        <span class="card-title">IBM watsonx.ai Studio — Clinical Decision Support Report</span>
+        <button class="action-btn blue sm-btn" onclick="generateClinicalSummary()">Generate Report</button>
+      </div>
+      <div id="clinical-summary-output" class="ai-output muted-label">Click "Generate Report" to construct a structured clinical recommendation.</div>
     </div>
   </div>
 
@@ -452,8 +1101,8 @@
 <!-- ═══════════════════════════ ANALYTICS PORTAL ═══════════════════════════ -->
 <main id="portal-analytics" class="portal" role="main">
   <section class="analytics-hero glass-card">
-    <h2 class="prov-title">Population Analytics</h2>
-    <p class="muted-label">Cross-patient metrics, risk distributions, and trend intelligence</p>
+    <h2 class="prov-title">Population Analytics Dashboard</h2>
+    <p class="muted-label">Cross-patient comparative indicators, adherence metrics, and vector database status</p>
   </section>
 
   <div class="analytics-grid">
@@ -475,7 +1124,19 @@
     </div>
   </div>
 
-  <div class="glass-card rag-card">
+  <!-- Adherence Trend Chart Row -->
+  <div class="analytics-grid" style="grid-template-columns: 1.5fr 1fr; margin-top:1.5rem">
+    <div class="glass-card analytics-chart-card">
+      <div class="card-header"><span class="card-title">Patient Activity vs. Calories Trend</span></div>
+      <canvas id="analytics-activity-chart" height="130"></canvas>
+    </div>
+    <div class="glass-card analytics-chart-card">
+      <div class="card-header"><span class="card-title">Population Medication Compliance</span></div>
+      <canvas id="analytics-meds-chart" height="130"></canvas>
+    </div>
+  </div>
+
+  <div class="glass-card rag-card" style="margin-top: 1.5rem;">
     <div class="card-header">
       <span class="card-title">RAG Knowledge Base Status</span>
       <span class="vector-badge" id="vector-badge">Vector Store Active</span>
@@ -489,7 +1150,7 @@
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
   </svg>
-  <span class="fab-label">IBM Granite AI</span>
+  <span class="fab-label">IBM watsonx.ai Studio AI</span>
 </button>
 
 <div class="chat-window glass-panel" id="chat-window" role="dialog" aria-label="AI Chat" aria-modal="true">
@@ -499,7 +1160,7 @@
         <svg width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="url(#cg1)" stroke-width="1.5"/><path d="M7 14 Q10 8 14 10 Q18 12 21 14 Q18 18 14 17 Q10 16 7 14Z" fill="url(#cg1)" opacity="0.9"/><circle cx="14" cy="14" r="3" fill="white" opacity="0.95"/><defs><linearGradient id="cg1" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stop-color="#00d4aa"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs></svg>
       </div>
       <div>
-        <span class="chat-title">IBM Granite Clinical AI</span>
+        <span class="chat-title">IBM watsonx.ai Studio Clinical AI</span>
         <span class="chat-model-tag" id="chat-model-tag">Simulator</span>
       </div>
     </div>
@@ -507,7 +1168,7 @@
   </div>
   <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
     <div class="msg ai">
-      <div class="msg-content">Hello! I'm your IBM Granite clinical AI companion. I can analyze your vitals, explain trends, identify risks, and provide evidence-based guidance. How can I help you today?</div>
+      <div class="msg-content">Hello! I'm your IBM watsonx.ai Studio clinical AI companion. I can analyze your vitals, explain trends, identify risks, and provide evidence-based guidance. How can I help you today?</div>
     </div>
   </div>
   <div class="chat-suggestions" id="chat-suggestions">
@@ -517,6 +1178,9 @@
     <button onclick="sendSuggestion('Explain my latest blood pressure reading')">Explain BP</button>
   </div>
   <div class="chat-input-row">
+    <button class="icon-btn sm" id="chat-mic-btn" onclick="toggleVoiceInput()" title="Voice Input" aria-label="Voice Input" style="margin-right: 5px; flex-shrink: 0; background: none; border: none; padding: 0; width: 28px; height: 28px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+    </button>
     <input type="text" id="chat-input" placeholder="Ask anything about your health…" onkeydown="chatKeydown(event)" autocomplete="off" />
     <button class="send-btn" onclick="sendChat()" aria-label="Send message">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -545,93 +1209,82 @@
     <div class="modal-header">
       <h3 class="modal-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        IBM Cloud Integration
+        VitalSense AI — Integration Settings
       </h3>
       <button class="icon-btn sm" onclick="closeSettingsDirect()" aria-label="Close">✕</button>
     </div>
     <div class="modal-body settings-body">
-
-      <div style="background:rgba(255,75,110,0.1);border:1px solid rgba(255,75,110,0.3);border-radius:10px;padding:0.9rem 1.1rem;margin-bottom:0.25rem;">
-        <div style="font-weight:700;color:#ff4b6e;font-size:0.85rem;margin-bottom:6px;">⚠️ IBM Cloud Lite credentials are mandatory</div>
-        <div style="color:#b0bbd0;font-size:0.78rem;line-height:1.6;">
-          This application exclusively uses <strong style="color:#e8edf5">IBM Cloud Lite services</strong>.
-          All AI features require a live <strong style="color:#e8edf5">IBM Granite</strong> connection via watsonx.ai.
-          <strong style="color:#e8edf5">IBM Lite plan is free</strong> — no credit card required.
-          &nbsp;<a href="https://cloud.ibm.com/registration" target="_blank" style="color:#00d4aa;">Sign up →</a>
-          &nbsp;|&nbsp;<a href="https://dataplatform.cloud.ibm.com" target="_blank" style="color:#3b82f6;">Open watsonx.ai →</a>
-          &nbsp;|&nbsp;<a href="SETUP.md" target="_blank" style="color:#a78bfa;">Setup guide →</a>
+      
+      <div style="background:rgba(255,75,110,0.06);border:1px solid rgba(255,75,110,0.25);border-radius:10px;padding:0.8rem 1rem;margin-bottom:1rem;">
+        <div style="font-weight:700;color:#ff4b6e;font-size:0.82rem;margin-bottom:4px;">⚠️ IBM Cloud Lite Services are Active</div>
+        <div style="color:#b0bbd0;font-size:0.75rem;line-height:1.5;">
+          This platform utilizes **IBM watsonx.ai Studio LLM** via watsonx.ai and **IBM Cloud Object Storage** for cloud reports storage. Provide your credentials below to connect to live IBM APIs, or utilize the built-in offline simulator fallbacks.
         </div>
       </div>
 
       <div class="settings-grid">
+        <!-- Watson Machine Learning Credentials -->
         <div class="settings-section">
-          <h4 class="settings-section-title">Watson ML / watsonx.ai — REQUIRED</h4>
+          <h4 class="settings-section-title">Watson ML / watsonx.ai (LLM Chat &amp; Risk)</h4>
           <div class="input-group">
-            <label for="cfg-apikey">IBM Cloud API Key <span style="color:#ff4b6e">*</span></label>
-            <input type="password" id="cfg-apikey" placeholder="Paste your IBM Cloud API Key…" autocomplete="off"
-              title="cloud.ibm.com → Manage → Access (IAM) → API keys → Create an IBM Cloud API key" />
+            <label for="cfg-apikey">IBM Cloud API Key</label>
+            <input type="password" id="cfg-apikey" placeholder="Enter IBM Cloud API key..." autocomplete="off" />
           </div>
           <div class="input-group">
-            <label for="cfg-url">Watson ML Service URL <span style="color:#ff4b6e">*</span></label>
-            <input type="text" id="cfg-url" placeholder="https://us-south.ml.cloud.ibm.com"
-              title="From your Watson Machine Learning instance page — click the service, copy the URL from credentials" />
+            <label for="cfg-url">Watson ML Service URL</label>
+            <input type="text" id="cfg-url" placeholder="https://us-south.ml.cloud.ibm.com" />
           </div>
           <div class="input-group">
-            <label for="cfg-project">watsonx.ai Project ID <span style="color:#ff4b6e">*</span></label>
-            <input type="text" id="cfg-project" placeholder="Paste Project ID from dataplatform.cloud.ibm.com…"
-              title="dataplatform.cloud.ibm.com → Your project → Manage → General → Project ID" />
+            <label for="cfg-project">watsonx.ai Project ID</label>
+            <input type="text" id="cfg-project" placeholder="Enter Project ID..." />
           </div>
           <div class="input-group">
-            <label for="cfg-model">IBM Granite Model ID</label>
-            <input type="text" id="cfg-model" placeholder="ibm/granite-3-8b-instruct"
-              title="Recommended Lite tier model: ibm/granite-3-8b-instruct" />
-            <span style="font-size:0.7rem;color:#5a6780;margin-top:3px;display:block">
-              Recommended (Lite): <code style="color:#00d4aa;background:rgba(0,212,170,0.08);padding:1px 5px;border-radius:4px">ibm/granite-3-8b-instruct</code>
-            </span>
+            <label for="cfg-model">IBM watsonx.ai Studio Model ID</label>
+            <input type="text" id="cfg-model" placeholder="meta-llama/llama-3-8b-instruct" />
           </div>
-          <div class="toggle-row" title="Automatically enabled when all three required fields are present">
-            <label style="color:#5a6780;font-size:0.78rem">IBM Granite API (auto-enabled with credentials)</label>
+          <div class="toggle-row">
+            <label style="color:#5a6780;font-size:0.78rem">IBM watsonx.ai Studio API (auto-enabled with credentials)</label>
             <label class="toggle-switch">
-              <input type="checkbox" id="cfg-use-real" onchange="updateApiStatus()" checked/>
+              <input type="checkbox" id="cfg-use-real" checked />
               <span class="slider"></span>
             </label>
           </div>
         </div>
 
+        <!-- IBM Cloud Object Storage Credentials -->
         <div class="settings-section">
-          <h4 class="settings-section-title">Watson Discovery Lite — OPTIONAL</h4>
+          <h4 class="settings-section-title">IBM Cloud Object Storage (Report Storage)</h4>
           <div class="input-group">
-            <label for="cfg-disc-url">Discovery Service URL</label>
-            <input type="text" id="cfg-disc-url" placeholder="https://api.us-south.discovery.watson.cloud.ibm.com" />
+            <label for="cfg-cos-apikey">COS API Key (Optional)</label>
+            <input type="password" id="cfg-cos-apikey" placeholder="Defaults to main API key if empty..." autocomplete="off" />
           </div>
           <div class="input-group">
-            <label for="cfg-disc-key">Discovery API Key</label>
-            <input type="password" id="cfg-disc-key" placeholder="Discovery instance API Key…" />
+            <label for="cfg-cos-endpoint">COS Endpoint URL</label>
+            <input type="text" id="cfg-cos-endpoint" placeholder="s3.us-south.cloud-object-storage.appdomain.cloud" />
           </div>
           <div class="input-group">
-            <label for="cfg-disc-proj">Discovery Project ID</label>
-            <input type="text" id="cfg-disc-proj" placeholder="Discovery Project ID…" />
+            <label for="cfg-cos-bucket">COS Bucket Name</label>
+            <input type="text" id="cfg-cos-bucket" placeholder="vitalsense-reports" />
+          </div>
+          <div class="input-group">
+            <label for="cfg-cos-instance">COS Service Instance ID</label>
+            <input type="text" id="cfg-cos-instance" placeholder="crn:v1:bluemix:public:cloud-object-storage..." />
           </div>
           <div class="toggle-row">
-            <label>Enable Watson Discovery RAG</label>
+            <label style="color:#5a6780;font-size:0.78rem">Enable COS Bucket Uploads</label>
             <label class="toggle-switch">
-              <input type="checkbox" id="cfg-disc-enabled" />
+              <input type="checkbox" id="cfg-cos-enabled" checked />
               <span class="slider"></span>
             </label>
           </div>
-          <p class="muted-label" style="font-size:0.72rem;margin-top:0.5rem;line-height:1.5">
-            Lite plan: 1 free collection, up to 1,000 documents.<br/>
-            Upload ADA/JNC-8/AHA guideline PDFs for evidence-grounded AI.<br/>
-            Without Discovery, built-in TF-IDF vector store is used instead.
-          </p>
         </div>
       </div>
 
-      <div id="api-status" class="api-status error">⚠️ Missing: API Key, Watson ML URL, Project ID. IBM Granite AI features are disabled until all three fields are filled.</div>
+      <div id="api-status" class="api-status error">⚠️ Missing: Watson ML API Key, Service URL, and Project ID. AI operations running in Simulator fallback mode.</div>
     </div>
     <div class="modal-footer">
       <button class="action-btn emerald" onclick="saveSettings()">Save &amp; Connect</button>
-      <button class="action-btn blue" onclick="testConnection()">Test IBM Connection</button>
+      <button class="action-btn blue" onclick="testConnection()">Test Connection</button>
       <button class="action-btn ghost" onclick="closeSettingsDirect()">Cancel</button>
     </div>
   </div>
@@ -643,7 +1296,7 @@
     <div class="modal-header">
       <h3 class="modal-title">
         <svg width="16" height="16" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="url(#sg1)" stroke-width="1.5"/><path d="M7 14 Q10 8 14 10 Q18 12 21 14 Q18 18 14 17 Q10 16 7 14Z" fill="url(#sg1)" opacity="0.9"/><circle cx="14" cy="14" r="3" fill="white" opacity="0.95"/><defs><linearGradient id="sg1" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stop-color="#00d4aa"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs></svg>
-        IBM Granite — Patient AI Analysis
+        IBM watsonx.ai Studio — Patient AI Analysis
       </h3>
       <button class="icon-btn sm" onclick="closeAiSummaryDirect()" aria-label="Close">✕</button>
     </div>

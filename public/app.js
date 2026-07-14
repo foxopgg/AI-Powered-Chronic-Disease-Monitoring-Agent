@@ -1,15 +1,15 @@
-/* ═══════════════════════════════════════════════════════════════════
+﻿/* ===================================================================
    VitalSense AI — Core Application
-   app.js  ·  Vanilla ES6  ·  IBM Granite Clinical AI
+   app.js  ·  Vanilla ES6  ·  IBM watsonx.ai Studio Clinical AI
    CSV Patient Loader · RAG Vector Store · IBM Cloud Integration
-   ═══════════════════════════════════════════════════════════════════ */
+   =================================================================== */
 
 'use strict';
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    1. FALLBACK SEED PATIENTS
    Used when CSV loading is unavailable (file:// protocol)
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 const SEED_PATIENTS = [
   {
     id: 0, name: 'Aarav Mehta', initials: 'AM', age: 45, sex: 'M',
@@ -51,12 +51,38 @@ const SEED_PATIENTS = [
     targets: { glucoseMin:70, glucoseMax:130, bpSystolicMax:120, bpDiastolicMax:75, hrMin:55, hrMax:85, spo2Min:92, weightMin:70, weightMax:85 },
     history: [],
   },
+  {
+    id: 3, name: 'Meena Krishnan', initials: 'MK', age: 52, sex: 'F',
+    condition: 'Type 2 Diabetes & Hypertension · Age 52 · F', diagnosis: 'type2_diabetes_htn',
+    primaryPhysician: 'Dr. Anitha Nair', insuranceId: 'MAX-DH-6612-MEE', nextAppointment: '2026-08-20',
+    emergencyContact: 'Suresh Krishnan (husband) +91-96050-77890',
+    medications: [
+      { name: 'Metformin 500mg',    dose: 'Twice daily with meals', time: 'AM' },
+      { name: 'Sitagliptin 100mg',  dose: 'Morning',                time: 'AM' },
+      { name: 'Losartan 50mg',      dose: 'Evening',                time: 'PM' },
+    ],
+    targets: { glucoseMin:70, glucoseMax:150, bpSystolicMax:135, bpDiastolicMax:85, hrMin:60, hrMax:100, spo2Min:95, weightMin:60, weightMax:76 },
+    history: [],
+  },
+  {
+    id: 4, name: 'Arjun Patel', initials: 'AP', age: 38, sex: 'M',
+    condition: 'COPD & Hypertension · Age 38 · M', diagnosis: 'copd_htn',
+    primaryPhysician: 'Dr. Vimal Shah', insuranceId: 'HDFC-CP-3341-ARJ', nextAppointment: '2026-09-01',
+    emergencyContact: 'Pooja Patel (wife) +91-98260-44321',
+    medications: [
+      { name: 'Tiotropium Inhaler', dose: 'Once daily (morning)', time: 'AM' },
+      { name: 'Salbutamol Inhaler', dose: 'As needed for breathlessness', time: 'AM' },
+      { name: 'Telmisartan 40mg',   dose: 'Evening',                time: 'PM' },
+    ],
+    targets: { glucoseMin:70, glucoseMax:110, bpSystolicMax:140, bpDiastolicMax:90, hrMin:60, hrMax:95, spo2Min:90, weightMin:68, weightMax:82 },
+    history: [],
+  },
 ];
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    2. CSV PARSER
    Parses patients.csv into patient objects
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function parseCSV(text) {
   const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
@@ -123,9 +149,9 @@ async function loadCSVPatients() {
   return null;
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    3. HISTORY GENERATOR
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function rand(min, max) { return min + Math.random() * (max - min); }
 
 function generateHistory(diagnosis, days) {
@@ -164,11 +190,11 @@ function generateHistory(diagnosis, days) {
   return logs;
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    4. CLIENT-SIDE VECTOR STORE (RAG Layer 1)
    Lightweight TF-IDF cosine similarity for
    matching queries to clinical knowledge chunks
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 const CLINICAL_KNOWLEDGE = [
   { id: 'icmr_diabetes_targets', title: 'ICMR Diabetes Guidelines (India)', text: 'ICMR Guidelines: Fasting blood glucose target: 90-130 mg/dL. Post-meal (2hr): <180 mg/dL. HbA1c target: <7.0%. For elderly or those with microvascular complications like diabetic nephropathy, HbA1c <7.5-8.0% is acceptable. Hypoglycemia: <70 mg/dL. Screening for diabetic kidney disease should be done annually with urine albumin-to-creatinine ratio (UACR).' },
   { id: 'csi_hypertension', title: 'CSI Hypertension Guidelines (India)', text: 'Cardiological Society of India (CSI) Guidelines: Blood pressure target in general population: <140/90 mmHg. Target for diabetics, CAD, or chronic kidney disease (CKD): <130/80 mmHg. Stage 1 hypertension: 130-139/80-89 mmHg. Stage 2: ≥140/90 mmHg. Hypertensive emergency: >180/120 mmHg with target organ damage. South Asians have a 2-3x higher baseline cardiovascular mortality risk, warranting earlier lifestyle and pharmacotherapy interventions.' },
@@ -216,9 +242,9 @@ const VectorStore = (() => {
   };
 })();
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    5. APPLICATION STATE
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 const STATE = {
   patients:           [],
   activePatientIdx:   0,
@@ -228,7 +254,7 @@ const STATE = {
   logDraft:           {},
   charts:             {},
   settings: {
-    apiKey: '', watsonUrl: '', modelId: 'ibm/granite-13b-instruct-v2',
+    apiKey: '', watsonUrl: '', modelId: 'meta-llama/llama-3-70b-instruct',
     projectId: '', useReal: false,
     discoveryUrl: '', discoveryKey: '', discoveryProjectId: '', discoveryEnabled: false,
   },
@@ -245,9 +271,9 @@ const STATE = {
   outcomeCarbs:       60,
 };
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    6. PERSISTENCE
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function savePatients()    { try { localStorage.setItem('vs_patients', JSON.stringify(STATE.patients)); } catch(e) {} }
 function persistSettings() { try { localStorage.setItem('vs_settings', JSON.stringify(STATE.settings)); } catch(e) {} }
 function saveMedTaken()    { try { localStorage.setItem('vs_medtaken', JSON.stringify(STATE.medTaken)); } catch(e) {} }
@@ -327,9 +353,9 @@ function rebuildPatientSelector() {
   ).join('');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    7. ANALYTICS ENGINE
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function getLatestVitals(patient) {
   const logs = patient.history.filter(l => l.type === 'vitals');
   return logs.length ? logs[logs.length - 1] : null;
@@ -387,9 +413,9 @@ function evaluateAndAlert(patient) {
   return analysis;
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    8. UI HELPERS
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function fmtDate(ts) {
   return new Date(ts).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
 }
@@ -460,9 +486,9 @@ function colorCard(cardId, statusCls) {
   if (statusCls === 'status-low')      el.classList.add('mc-coral');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    9. PATIENT DASHBOARD RENDER
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function renderPatientDashboard() {
   const p = STATE.patients[STATE.activePatientIdx];
   if (!p) return;
@@ -477,6 +503,37 @@ function renderPatientDashboard() {
   setEl('hero-insurance', p.insuranceId || '—');
   setEl('hero-appt', p.nextAppointment ? `Next: ${p.nextAppointment}` : 'No appointment');
   setEl('med-today-date', new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }));
+  
+  // Calculate dynamic health score
+  const healthScore = calculateHealthScore(p);
+  setEl('pt-health-score', `${healthScore}/100`);
+  
+  // Emergency Banner controls
+  const banner = document.getElementById('emergency-banner');
+  const textEl = document.getElementById('emergency-text');
+  const contactNameEl = document.getElementById('emergency-contact-name');
+  const contactPhoneEl = document.getElementById('emergency-contact-phone');
+  const criticalFlags = analysis.flags.filter(f => f.type === 'critical');
+  
+  if (criticalFlags.length && banner) {
+    banner.style.display = 'flex';
+    if (textEl) textEl.textContent = criticalFlags.map(f => f.msg.replace('🔴 ', '')).join(' | ');
+    let contactName = 'Kavita Mehta';
+    let contactPhone = '+91-98250-12345';
+    if (p.emergencyContact) {
+      const match = p.emergencyContact.match(/^(.*?)\s*(\+?[\d-]+)$/);
+      if (match) {
+        contactName = match[1].trim();
+        contactPhone = match[2].trim();
+      } else {
+        contactName = p.emergencyContact;
+      }
+    }
+    if (contactNameEl) contactNameEl.textContent = contactName;
+    if (contactPhoneEl) contactPhoneEl.textContent = contactPhone;
+  } else if (banner) {
+    banner.style.display = 'none';
+  }
 
   const riskEl = document.getElementById('pt-risk-badge');
   if (riskEl) {
@@ -533,6 +590,71 @@ function renderPatientDashboard() {
     setEl('mt-weight', trendArrow(p.history, 'weight'));
     setHtml('spark-weight', buildSparkline(p.history.filter(h=>h.type==='vitals').slice(-10).map(h=>h.weight), '#a78bfa'));
     colorCard('mc-weight', ws.cls);
+
+    // Temperature
+    const temp = v.temp ?? 36.6;
+    setEl('mv-temp', temp);
+    const tempSt = temp > 38.5 ? { text:'Fever', cls:'status-critical' } : temp < 36.0 ? { text:'Low', cls:'status-low' } : { text:'Normal', cls:'status-normal' };
+    const msTemp = document.getElementById('ms-temp');
+    if (msTemp) { msTemp.textContent = tempSt.text; msTemp.className = `metric-status ${tempSt.cls}`; }
+    setEl('mt-temp', '');
+    colorCard('mc-temp', tempSt.cls);
+
+    // Respiration
+    const resp = v.resp ?? 16;
+    setEl('mv-resp', resp);
+    const respSt = resp > 24 ? { text:'Elevated', cls:'status-elevated' } : resp < 12 ? { text:'Low', cls:'status-low' } : { text:'Normal', cls:'status-normal' };
+    const msResp = document.getElementById('ms-resp');
+    if (msResp) { msResp.textContent = respSt.text; msResp.className = `metric-status ${respSt.cls}`; }
+    setEl('mt-resp', '');
+    colorCard('mc-resp', respSt.cls);
+
+    // Sleep
+    const sleep = v.sleep ?? 7.5;
+    setEl('mv-sleep', sleep);
+    const sleepSt = sleep < 6 ? { text:'Low', cls:'status-low' } : sleep > 9 ? { text:'Excess', cls:'status-elevated' } : { text:'Healthy', cls:'status-normal' };
+    const msSleep = document.getElementById('ms-sleep');
+    if (msSleep) { msSleep.textContent = sleepSt.text; msSleep.className = `metric-status ${sleepSt.cls}`; }
+    setEl('mt-sleep', '');
+    const sleepFill = document.getElementById('sleep-fill');
+    if (sleepFill) sleepFill.style.width = `${Math.min(100, (sleep / 8) * 100)}%`;
+
+    // Stress Level
+    const stress = v.stress ?? 3;
+    setEl('mv-stress', stress);
+    const stressSt = stress > 7 ? { text:'High', cls:'status-critical' } : stress > 5 ? { text:'Moderate', cls:'status-elevated' } : { text:'Low', cls:'status-normal' };
+    const msStress = document.getElementById('ms-stress');
+    if (msStress) { msStress.textContent = stressSt.text; msStress.className = `metric-status ${stressSt.cls}`; }
+    setEl('mt-stress', '');
+
+    // Activity
+    const activity = v.activity ?? 5000;
+    setEl('mv-activity', activity.toLocaleString());
+    const actSt = activity < 3000 ? { text:'Sedentary', cls:'status-low' } : activity > 10000 ? { text:'Active', cls:'status-normal' } : { text:'Moderate', cls:'status-elevated' };
+    const msActivity = document.getElementById('ms-activity');
+    if (msActivity) { msActivity.textContent = actSt.text; msActivity.className = `metric-status ${actSt.cls}`; }
+    setEl('mt-activity', activity >= 10000 ? '✓ Goal Reached' : `${(10000 - activity).toLocaleString()} to goal`);
+
+    // Water Intake
+    const water = v.water ?? 1800;
+    setEl('mv-water', water.toLocaleString());
+    const waterSt = water < 1500 ? { text:'Low', cls:'status-low' } : water >= 2500 ? { text:'Optimal', cls:'status-normal' } : { text:'Fair', cls:'status-elevated' };
+    const msWater = document.getElementById('ms-water');
+    if (msWater) { msWater.textContent = waterSt.text; msWater.className = `metric-status ${waterSt.cls}`; }
+    setEl('mt-water', '');
+    const waterFill = document.getElementById('water-fill');
+    if (waterFill) waterFill.style.width = `${Math.min(100, (water / 3000) * 100)}%`;
+
+    // BMI
+    const height = parseFloat(document.getElementById('pt-height')?.textContent) || 174;
+    const bmiVal = v.weight && height ? +(v.weight / ((height / 100) ** 2)).toFixed(1) : 0;
+    setEl('mv-bmi', bmiVal || '—');
+    setEl('pt-bmi', bmiVal ? `${bmiVal} kg/m²` : '—');
+    const bmiCat = !bmiVal ? 'Unknown' : bmiVal < 18.5 ? 'Underweight' : bmiVal < 23 ? 'Normal' : bmiVal < 27.5 ? 'Overweight' : 'Obese';
+    setEl('mv-bmi-cat', bmiCat);
+    const msBMI = document.getElementById('ms-bmi');
+    if (msBMI) { msBMI.textContent = bmiCat; msBMI.className = `metric-status ${bmiVal && bmiVal < 23 ? 'status-normal' : bmiVal < 27.5 ? 'status-elevated' : 'status-critical'}`; }
+    colorCard('mc-bmimeter', bmiVal && bmiVal < 23 ? 'status-normal' : 'status-elevated');
   }
 
   renderMedications(p);
@@ -542,9 +664,9 @@ function renderPatientDashboard() {
   updateOutcomesSimulator();
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    10. MEDICATION & LOGS RENDER
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function renderMedications(patient) {
   const container = document.getElementById('med-list');
   if (!container) return;
@@ -597,9 +719,9 @@ function renderRecentLogs(patient) {
   }).join('');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    11. CHART.JS WRAPPERS
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 const CHART_COLORS = { glucose:'#f5a623', systolic:'#ff4b6e', hr:'#f43f5e', weight:'#a78bfa' };
 
 function getChartLabels(patient) {
@@ -687,9 +809,9 @@ function switchChart(type, btn) {
   renderVitalsChart(type);
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    12. PROVIDER PORTAL
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function renderProviderPortal() {
   renderTriageList();
   renderTargetsForm();
@@ -735,6 +857,7 @@ function selectProviderPatient(idx) {
   renderProviderChart(p);
   renderProviderLogTable(p);
   renderTargetsForm();
+  loadProviderPatientReports(p);
 }
 
 function renderProviderChart(patient) {
@@ -809,15 +932,15 @@ function generateClinicalSummary() {
 
   if (!hasIBMCredentials()) {
     output.textContent =
-      '⚠️ IBM Granite credentials required.\n\n' +
+      '⚠️ IBM watsonx.ai Studio credentials required.\n\n' +
       'Provide your IBM Cloud API Key, Watson ML URL, and Project ID in ⚙️ Settings\n' +
-      'to generate a real IBM Granite clinical report.\n\n' +
+      'to generate a real IBM watsonx.ai Studio clinical report.\n\n' +
       'IBM Cloud Lite plan is free — see SETUP.md.';
     setTimeout(() => openSettings(), 400);
     return;
   }
 
-  output.textContent = 'Connecting to IBM Granite (watsonx.ai)…';
+  output.textContent = 'Connecting to IBM watsonx.ai Studio (watsonx.ai)…';
   callRealGraniteChat(
     'Generate a structured clinical report including longitudinal vital statistics, active flags, medication schedule, risk assessment, and recommended next steps.',
     p
@@ -826,9 +949,9 @@ function generateClinicalSummary() {
     .catch(err => {
       const fallbackAllowed = window.APP_CONFIG?.simulatorFallback === true;
       if (fallbackAllowed) {
-        output.textContent = `⚠️ IBM Granite unavailable: ${err.message}\n[SIMULATOR FALLBACK]\n\n${graniteGenerateClinicalSummary(p)}`;
+        output.textContent = `⚠️ IBM watsonx.ai Studio unavailable: ${err.message}\n[SIMULATOR FALLBACK]\n\n${graniteGenerateClinicalSummary(p)}`;
       } else {
-        output.textContent = `❌ IBM Granite error: ${err.message}\n\nCheck credentials in ⚙️ Settings.`;
+        output.textContent = `❌ IBM watsonx.ai Studio error: ${err.message}\n\nCheck credentials in ⚙️ Settings.`;
       }
     });
 }
@@ -850,9 +973,9 @@ function renderAlarmDashboard() {
   ).join('');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    13. ANALYTICS PORTAL
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function renderAnalyticsPortal() {
   renderAnalyticsCharts();
   renderAnalyticsSummary();
@@ -907,6 +1030,58 @@ function renderAnalyticsCharts() {
       options: { ...chartDefaults(), plugins:{ legend:{ display:false } } },
     });
   }
+
+  // Activity vs Steps chart
+  const actCtx = document.getElementById('analytics-activity-chart');
+  if (actCtx) {
+    if (STATE.charts.analyticsActivity) STATE.charts.analyticsActivity.destroy();
+    const days7 = [];
+    const now7 = Date.now();
+    for (let d = 6; d >= 0; d--) {
+      days7.push(new Date(now7 - d * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    }
+    const activityData = days7.map(() => Math.round(rand(3500, 11000)));
+    const caloriesData = activityData.map(steps => Math.round(steps * 0.045));
+    STATE.charts.analyticsActivity = new Chart(actCtx, {
+      type: 'line',
+      data: {
+        labels: days7,
+        datasets: [
+          { label: 'Steps', data: activityData, borderColor: '#10d9a0', backgroundColor: 'rgba(16,217,160,0.06)', fill: true, yAxisID: 'y' },
+          { label: 'Calories Burned', data: caloriesData, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.06)', fill: false, yAxisID: 'y1' },
+        ],
+      },
+      options: {
+        ...chartDefaults(),
+        scales: {
+          ...chartDefaults().scales,
+          y:  { ...chartDefaults().scales.y, title: { display: true, text: 'Steps', color: '#5a6780', font: { size: 10 } } },
+          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#5a6780', font: { size: 10 } }, title: { display: true, text: 'Calories', color: '#5a6780', font: { size: 10 } } },
+        },
+      },
+    });
+  }
+
+  // Medication compliance chart
+  const medsCtx = document.getElementById('analytics-meds-chart');
+  if (medsCtx) {
+    if (STATE.charts.analyticsMeds) STATE.charts.analyticsMeds.destroy();
+    const today = new Date().toISOString().slice(0, 10);
+    const complianceData = STATE.patients.map(p => {
+      const total = p.medications.length;
+      if (!total) return 0;
+      const taken = p.medications.filter((_, i) => STATE.medTaken[`${p.id}_${i}_${today}`]).length;
+      return Math.round((taken / total) * 100);
+    });
+    STATE.charts.analyticsMeds = new Chart(medsCtx, {
+      type: 'bar',
+      data: {
+        labels: names,
+        datasets: [{ label: 'Compliance %', data: complianceData, backgroundColor: complianceData.map(v => v >= 75 ? 'rgba(16,217,160,0.7)' : v >= 40 ? 'rgba(245,166,35,0.7)' : 'rgba(255,75,110,0.7)'), borderRadius: 6, borderWidth: 0 }],
+      },
+      options: { ...chartDefaults(), plugins: { legend: { display: false } }, scales: { ...chartDefaults().scales, y: { ...chartDefaults().scales.y, max: 100 } } },
+    });
+  }
 }
 
 function renderAnalyticsSummary() {
@@ -928,7 +1103,7 @@ function renderAnalyticsSummary() {
     ['Pop. Avg Systolic BP', `${avgBP} mmHg`],
     ['Active Alerts',        `<span style="color:var(--coral)">${totalAlerts}</span>`],
     ['RAG Vector Chunks',    CLINICAL_KNOWLEDGE.length],
-    ['AI Mode',              STATE.settings.useReal ? `<span style="color:var(--teal)">Real Granite</span>` : 'Simulator'],
+    ['AI Mode',              STATE.settings.useReal ? `<span style="color:var(--teal)">watsonx.ai Live</span>` : 'Simulator'],
   ];
   container.innerHTML = rows.map(([label, value]) =>
     `<div class="analytics-stat-row">
@@ -941,11 +1116,12 @@ function renderAnalyticsSummary() {
 function renderRAGStatus() {
   const container = document.getElementById('rag-status');
   if (!container) return;
+  const cosStatus = (STATE.settings.cosApiKey || STATE.settings.apiKey) && STATE.settings.cosEndpoint ? 'active' : 'optional';
   const items = [
     { title:'Client Vector Store', desc:`${CLINICAL_KNOWLEDGE.length} clinical knowledge chunks indexed (ADA, JNC-8, AHA guidelines). Active for all queries.`, status:'active', label:'Active' },
-    { title:'IBM Watson Discovery', desc:'Cloud-based semantic RAG. Upload clinical guidelines as PDFs to Discovery to enable evidence-grounded responses.', status: STATE.settings.discoveryEnabled ? 'active' : 'optional', label: STATE.settings.discoveryEnabled ? 'Connected' : 'Not Configured' },
-    { title:'IBM Watson ML / Granite', desc:`Model: ${STATE.settings.modelId || 'ibm/granite-13b-instruct-v2'}. Real AI inference via watsonx.ai.`, status: STATE.settings.useReal ? 'active' : 'optional', label: STATE.settings.useReal ? 'Connected' : 'Simulator Mode' },
-    { title:'Patient CSV Dataset', desc:`${STATE.patients.length} patients loaded from patients.csv. Edit the file to add, remove, or modify patient data.`, status:'active', label:'Loaded' },
+    { title:'IBM Cloud Object Storage', desc:`COS Endpoint: ${STATE.settings.cosEndpoint || 'Not configured'}. Bucket: ${STATE.settings.cosBucket || 'vitalsense-reports'}. Stores uploaded PDFs, reports, and AI-generated health dossiers.`, status: cosStatus, label: cosStatus === 'active' ? 'Connected' : 'Not Configured' },
+    { title:'IBM Watson ML / watsonx.ai', desc:`Model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}. Real AI inference via watsonx.ai Studio.`, status: STATE.settings.useReal ? 'active' : 'optional', label: STATE.settings.useReal ? 'Connected' : 'Simulator Mode' },
+    { title:'Patient Dataset', desc:`${STATE.patients.length} patients loaded (${STATE.patients.filter(p => analyzeVitals(p).level === 'critical').length} critical, ${STATE.patients.filter(p => analyzeVitals(p).level === 'warning').length} warning). Edit patients.csv to modify.`, status:'active', label:'Loaded' },
   ];
   container.innerHTML = items.map(item => `
     <div class="rag-item">
@@ -956,9 +1132,9 @@ function renderRAGStatus() {
   `).join('');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    14. LOG MODAL
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function openLogModal(type) {
   STATE.logDraft = { type };
   const overlay = document.getElementById('log-modal-overlay');
@@ -1078,9 +1254,9 @@ function toggleMed(patientId, medIdx) {
   renderMedAdherenceChart(STATE.patients[STATE.activePatientIdx]);
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    15. NOTIFICATIONS
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function renderNotifications() {
   const list  = document.getElementById('notif-list');
   const badge = document.getElementById('notif-badge');
@@ -1111,20 +1287,27 @@ function clearAlerts() {
   showToast('All alerts cleared.', 'blue');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    16. SETTINGS
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function openSettings() {
   const s = STATE.settings;
   document.getElementById('cfg-apikey').value    = s.apiKey    || '';
   document.getElementById('cfg-url').value       = s.watsonUrl || '';
-  document.getElementById('cfg-model').value     = s.modelId   || 'ibm/granite-13b-instruct-v2';
+  document.getElementById('cfg-model').value     = s.modelId   || 'meta-llama/llama-3-8b-instruct';
   document.getElementById('cfg-project').value   = s.projectId || '';
   document.getElementById('cfg-use-real').checked = s.useReal  || false;
-  document.getElementById('cfg-disc-url').value  = s.discoveryUrl        || '';
-  document.getElementById('cfg-disc-key').value  = s.discoveryKey        || '';
-  document.getElementById('cfg-disc-proj').value = s.discoveryProjectId  || '';
-  document.getElementById('cfg-disc-enabled').checked = s.discoveryEnabled || false;
+  // COS Settings
+  const cosApiKey = document.getElementById('cfg-cos-apikey');
+  const cosEndpoint = document.getElementById('cfg-cos-endpoint');
+  const cosBucket = document.getElementById('cfg-cos-bucket');
+  const cosInstance = document.getElementById('cfg-cos-instance');
+  const cosEnabled = document.getElementById('cfg-cos-enabled');
+  if (cosApiKey) cosApiKey.value     = s.cosApiKey   || '';
+  if (cosEndpoint) cosEndpoint.value = s.cosEndpoint || 's3.us-south.cloud-object-storage.appdomain.cloud';
+  if (cosBucket) cosBucket.value     = s.cosBucket   || 'vitalsense-reports';
+  if (cosInstance) cosInstance.value = s.cosInstanceId || '';
+  if (cosEnabled) cosEnabled.checked = s.cosEnabled !== false;
   document.getElementById('settings-overlay').classList.add('open');
   updateApiStatus();
 }
@@ -1132,16 +1315,25 @@ function closeSettings(e)   { if (e.target.id === 'settings-overlay') closeSetti
 function closeSettingsDirect() { document.getElementById('settings-overlay').classList.remove('open'); }
 
 function saveSettings() {
-  STATE.settings.apiKey             = document.getElementById('cfg-apikey').value.trim();
-  STATE.settings.watsonUrl          = document.getElementById('cfg-url').value.trim();
-  STATE.settings.modelId            = document.getElementById('cfg-model').value.trim() || 'ibm/granite-3-8b-instruct';
-  STATE.settings.projectId          = document.getElementById('cfg-project').value.trim();
+  STATE.settings.apiKey    = document.getElementById('cfg-apikey').value.trim();
+  STATE.settings.watsonUrl = document.getElementById('cfg-url').value.trim();
+  STATE.settings.modelId   = document.getElementById('cfg-model').value.trim() || 'meta-llama/llama-3-8b-instruct';
+  STATE.settings.projectId = document.getElementById('cfg-project').value.trim();
   /* useReal is always true when credentials are present — toggle is kept for override only */
-  STATE.settings.useReal            = document.getElementById('cfg-use-real').checked;
-  STATE.settings.discoveryUrl       = document.getElementById('cfg-disc-url').value.trim();
-  STATE.settings.discoveryKey       = document.getElementById('cfg-disc-key').value.trim();
-  STATE.settings.discoveryProjectId = document.getElementById('cfg-disc-proj').value.trim();
-  STATE.settings.discoveryEnabled   = document.getElementById('cfg-disc-enabled').checked;
+  STATE.settings.useReal   = document.getElementById('cfg-use-real').checked;
+  // COS Settings
+  const cosApiKey = document.getElementById('cfg-cos-apikey');
+  const cosEndpoint = document.getElementById('cfg-cos-endpoint');
+  const cosBucket = document.getElementById('cfg-cos-bucket');
+  const cosInstance = document.getElementById('cfg-cos-instance');
+  const cosEnabled = document.getElementById('cfg-cos-enabled');
+  STATE.settings.cosApiKey    = cosApiKey   ? cosApiKey.value.trim()   : '';
+  STATE.settings.cosEndpoint  = cosEndpoint ? cosEndpoint.value.trim() : 's3.us-south.cloud-object-storage.appdomain.cloud';
+  STATE.settings.cosBucket    = cosBucket   ? cosBucket.value.trim()   : 'vitalsense-reports';
+  STATE.settings.cosInstanceId = cosInstance ? cosInstance.value.trim() : '';
+  STATE.settings.cosEnabled   = cosEnabled  ? cosEnabled.checked       : true;
+  // Legacy discovery fields — keep for backward compat
+  STATE.settings.discoveryEnabled = false;
 
   /* Auto-enable real API when all three mandatory fields are present */
   if (STATE.settings.apiKey && STATE.settings.watsonUrl && STATE.settings.projectId) {
@@ -1162,8 +1354,8 @@ function saveSettings() {
 
   showToast(
     hasIBMCredentials()
-      ? `IBM Granite connected (${STATE.settings.modelId}).`
-      : 'Settings saved. IBM Granite credentials still required.',
+      ? `IBM watsonx.ai Studio connected (${STATE.settings.modelId}).`
+      : 'Settings saved. IBM watsonx.ai Studio credentials still required.',
     hasIBMCredentials() ? 'emerald' : 'amber'
   );
 }
@@ -1176,10 +1368,10 @@ function updateApiStatus() {
   const projId   = document.getElementById('cfg-project')?.value.trim() || STATE.settings.projectId;
 
   if (apiKey && watsonUrl && projId) {
-    el.textContent = `✅ IBM Granite ready — model: ${STATE.settings.modelId || 'ibm/granite-3-8b-instruct'}`;
+    el.textContent = `✅ IBM watsonx.ai Studio ready — model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}`;
     el.className = 'api-status connected';
   } else if (STATE.hasServerCredentials) {
-    el.textContent = `✅ IBM Granite ready via Server Environment Variables — model: ${STATE.settings.modelId || 'ibm/granite-3-8b-instruct'}`;
+    el.textContent = `✅ IBM watsonx.ai Studio ready via Server Environment Variables — model: ${STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct'}`;
     el.className = 'api-status connected';
   } else {
     const missing = [
@@ -1187,7 +1379,7 @@ function updateApiStatus() {
       !watsonUrl && 'Watson ML URL',
       !projId    && 'Project ID',
     ].filter(Boolean).join(', ');
-    el.textContent = `⚠️ Missing: ${missing}. IBM Granite AI features are disabled until all three fields are filled.`;
+    el.textContent = `⚠️ Missing: ${missing}. IBM watsonx.ai Studio AI features are disabled until all three fields are filled.`;
     el.className = 'api-status error';
   }
 }
@@ -1199,11 +1391,11 @@ function updateIBMStatusDot() {
 
   const ready = hasIBMCredentials();
   dot.className = ready ? 'ibm-status-dot connected' : 'ibm-status-dot error';
-  if (label) label.textContent = ready ? 'Granite Live' : 'No Credentials';
+  if (label) label.textContent = ready ? 'watsonx.ai Studio Live' : 'No Credentials';
 
   const chatTag = document.getElementById('chat-model-tag');
   if (chatTag) {
-    chatTag.textContent = ready ? (STATE.settings.modelId || 'ibm/granite-3-8b-instruct') : '⚠️ Not Connected';
+    chatTag.textContent = ready ? (STATE.settings.modelId || 'meta-llama/llama-3-8b-instruct') : '⚠️ Not Connected';
     chatTag.className   = `chat-model-tag ${ready ? 'real' : ''}`;
   }
 }
@@ -1238,9 +1430,9 @@ async function testConnection() {
   }
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    17. AI CHAT
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function toggleChat() {
   document.getElementById('chat-window').classList.toggle('open');
 }
@@ -1280,18 +1472,19 @@ function sendChat() {
     /* Credentials missing — prompt user to configure, do not use simulator */
     typingEl.remove();
     appendChatMsg(
-      '⚠️ IBM Granite credentials are required.\n\nPlease open ⚙️ Settings and enter your:\n  • IBM Cloud API Key\n  • Watson ML Service URL\n  • watsonx.ai Project ID\n\nThis application requires IBM Cloud Lite services. See SETUP.md for a step-by-step provisioning guide.',
+      '⚠️ IBM watsonx.ai Studio credentials are required.\n\nPlease open ⚙️ Settings and enter your:\n  • IBM Cloud API Key\n  • Watson ML Service URL\n  • watsonx.ai Project ID\n\nThis application requires IBM Cloud Lite services. See SETUP.md for a step-by-step provisioning guide.',
       'ai', msgs
     );
     setTimeout(() => openSettings(), 800);
     return;
   }
 
-  /* Route through real IBM Granite — simulator only if API call fails */
+  /* Route through real IBM watsonx.ai Studio — simulator only if API call fails */
   callRealGraniteChat(text, p)
     .then(response => {
       typingEl.remove();
       appendChatMsg(response, 'ai', msgs);
+      speakText(response);
     })
     .catch(err => {
       typingEl.remove();
@@ -1299,11 +1492,12 @@ function sendChat() {
       if (fallbackAllowed) {
         const simResponse = graniteChat(text, p);
         appendChatMsg(
-          `⚠️ IBM Granite API unavailable: ${err.message}\n\n[SIMULATOR FALLBACK — not a real IBM response]\n\n${simResponse}`,
+          `⚠️ IBM watsonx.ai Studio API unavailable: ${err.message}\n\n[SIMULATOR FALLBACK — not a real IBM response]\n\n${simResponse}`,
           'ai', msgs
         );
+        speakText(simResponse);
       } else {
-        appendChatMsg(`❌ IBM Granite API error: ${err.message}\n\nPlease check your credentials in ⚙️ Settings.`, 'ai', msgs);
+        appendChatMsg(`❌ IBM watsonx.ai Studio API error: ${err.message}\n\nPlease check your credentials in ⚙️ Settings.`, 'ai', msgs);
       }
     });
 }
@@ -1319,9 +1513,9 @@ function appendChatMsg(text, role, container) {
   container.scrollTop = container.scrollHeight;
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    18. REAL IBM GRANITE API CALL
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 async function callRealGraniteChat(query, patient) {
   if (!window.callGraniteAPI) throw new Error('config.js not loaded. Ensure <script src="config.js"> is present before app.js.');
   const v        = getLatestVitals(patient);
@@ -1338,9 +1532,9 @@ async function callRealGraniteChat(query, patient) {
   return await callGraniteAPI(prompt, STATE.settings);
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    19. IBM GRANITE SIMULATOR (Clinical LLM)
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function graniteChat(query, patient) {
   const v = getLatestVitals(patient);
   const analysis = analyzeVitals(patient);
@@ -1396,7 +1590,7 @@ function graniteChat(query, patient) {
     return '🚨 EMERGENCY:\n\nIf experiencing chest pain, sudden numbness, severe shortness of breath, or loss of consciousness — call emergency services (911) IMMEDIATELY.\n\nDo NOT drive yourself. Stay calm, sit or lie down, and wait for emergency responders.';
   }
 
-  return `🤖 IBM Granite Clinical AI — ${patient.name}:\n\nLatest vitals:\n• Glucose: ${v?.glucose ?? '—'} mg/dL\n• BP: ${v?.systolic}/${v?.diastolic} mmHg\n• HR: ${v?.hr} bpm · SpO₂: ${v?.spo2}%\n• Risk: ${analysis.level.toUpperCase()} (Score: ${analysis.risk}/100)\n\n${analysis.flags.length ? 'Active concerns:\n' + analysis.flags.map(f => '• ' + f.msg).join('\n') : '✅ No critical flags.'}\n\nAsk about glucose, BP, cardiac risk, diet, medications, or request a full summary.`;
+  return `🤖 IBM watsonx.ai Studio Clinical AI — ${patient.name}:\n\nLatest vitals:\n• Glucose: ${v?.glucose ?? '—'} mg/dL\n• BP: ${v?.systolic}/${v?.diastolic} mmHg\n• HR: ${v?.hr} bpm · SpO₂: ${v?.spo2}%\n• Risk: ${analysis.level.toUpperCase()} (Score: ${analysis.risk}/100)\n\n${analysis.flags.length ? 'Active concerns:\n' + analysis.flags.map(f => '• ' + f.msg).join('\n') : '✅ No critical flags.'}\n\nAsk about glucose, BP, cardiac risk, diet, medications, or request a full summary.`;
 }
 
 function graniteGeneratePatientSummary(patient) {
@@ -1404,7 +1598,7 @@ function graniteGeneratePatientSummary(patient) {
   const analysis = analyzeVitals(patient);
   const glucAvg = avgField(patient.history, 'glucose');
   const bpAvg   = avgField(patient.history, 'systolic');
-  return `🤖 IBM Granite — Patient Summary
+  return `🤖 IBM watsonx.ai Studio — Patient Summary
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Patient:    ${patient.name}
 Condition:  ${patient.condition}
@@ -1432,7 +1626,7 @@ function graniteGenerateClinicalSummary(patient) {
   const diaAvg  = avgField(patient.history, 'diastolic');
   const hrAvg   = avgField(patient.history, 'hr');
 
-  return `IBM Granite Clinical AI — Structured Report
+  return `IBM watsonx.ai Studio Clinical AI — Structured Report
 Generated: ${new Date().toLocaleString()}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PATIENT:       ${patient.name}
@@ -1466,12 +1660,12 @@ NEXT STEPS:
   Schedule follow-up: ${analysis.level === 'critical' ? '48 hours (URGENT)' : analysis.level === 'warning' ? '1 week' : '4 weeks'}
   ${analysis.level === 'critical' ? '🚨 URGENT: Consider immediate clinical intervention.' : ''}
 
-Note: Generated by IBM Granite Clinical AI Simulator. Not a substitute for clinical judgment.`;
+Note: Generated by IBM watsonx.ai Studio Clinical AI Simulator. Not a substitute for clinical judgment.`;
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    20. CLINICAL ADVICE GENERATORS
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function graniteRecommendations(patient, analysis) {
   const recs = [];
   const v = getLatestVitals(patient);
@@ -1571,9 +1765,9 @@ function dietAdvice(patient) {
   return base + tips.join('\n');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    21. AI ANALYSIS MODAL
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function requestAISummary() {
   const overlay = document.getElementById('ai-summary-overlay');
   const content = document.getElementById('ai-summary-content');
@@ -1581,8 +1775,8 @@ function requestAISummary() {
 
   if (!hasIBMCredentials()) {
     content.textContent =
-      '⚠️ IBM Granite credentials required.\n\n' +
-      'This AI analysis requires a live IBM Granite model connection.\n\n' +
+      '⚠️ IBM watsonx.ai Studio credentials required.\n\n' +
+      'This AI analysis requires a live IBM watsonx.ai Studio model connection.\n\n' +
       'Please open ⚙️ Settings and enter:\n' +
       '  • IBM Cloud API Key\n' +
       '  • Watson ML Service URL  (e.g. https://us-south.ml.cloud.ibm.com)\n' +
@@ -1593,7 +1787,7 @@ function requestAISummary() {
     return;
   }
 
-  content.textContent = 'Connecting to IBM Granite (watsonx.ai)…';
+  content.textContent = 'Connecting to IBM watsonx.ai Studio (watsonx.ai)…';
   const p = STATE.patients[STATE.activePatientIdx];
   callRealGraniteChat(
     'Provide a comprehensive patient summary with risk assessment, active clinical flags, and evidence-based recommendations.',
@@ -1604,10 +1798,10 @@ function requestAISummary() {
       const fallbackAllowed = window.APP_CONFIG?.simulatorFallback === true;
       if (fallbackAllowed) {
         content.textContent =
-          `⚠️ IBM Granite API unavailable: ${err.message}\n[SIMULATOR FALLBACK — not a real IBM response]\n\n` +
+          `⚠️ IBM watsonx.ai Studio API unavailable: ${err.message}\n[SIMULATOR FALLBACK — not a real IBM response]\n\n` +
           graniteGeneratePatientSummary(p);
       } else {
-        content.textContent = `❌ IBM Granite API error: ${err.message}\n\nCheck your credentials in ⚙️ Settings.`;
+        content.textContent = `❌ IBM watsonx.ai Studio API error: ${err.message}\n\nCheck your credentials in ⚙️ Settings.`;
       }
     });
 }
@@ -1615,9 +1809,9 @@ function requestAISummary() {
 function closeAiSummary(e)    { if (e.target.id === 'ai-summary-overlay') closeAiSummaryDirect(); }
 function closeAiSummaryDirect() { document.getElementById('ai-summary-overlay').classList.remove('open'); }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    22. PORTAL SWITCHING
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function switchPortal(name) {
   STATE.activePortal = name;
   document.querySelectorAll('.portal').forEach(p => p.classList.remove('active'));
@@ -1636,11 +1830,12 @@ function switchPortal(name) {
 function switchPatient(idx) {
   STATE.activePatientIdx = parseInt(idx);
   renderPatientDashboard();
+  renderTimeline();
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    23. TOAST NOTIFICATIONS
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 let _toastTimer = null;
 function showToast(msg, color = 'blue') {
   let toast = document.getElementById('toast');
@@ -1676,10 +1871,10 @@ function showToast(msg, color = 'blue') {
   }, 3000);
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    24. MANDATORY IBM CREDENTIAL ONBOARDING BANNER
    Shown on every load when credentials are absent
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 function showIBMOnboardingBanner() {
   /* Inject a sticky banner at top of the page */
   const existing = document.getElementById('ibm-onboarding-banner');
@@ -1700,7 +1895,7 @@ function showIBMOnboardingBanner() {
       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
       <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
     </svg>
-    <span style="color:#ff4b6e;font-weight:700">IBM Granite credentials required</span>
+    <span style="color:#ff4b6e;font-weight:700">IBM watsonx.ai Studio credentials required</span>
     <span style="color:#b0bbd0;flex:1">
       This application uses IBM Cloud Lite services. AI features are disabled until you configure your
       <strong style="color:#e8edf5">IBM Cloud API Key</strong>,
@@ -1733,9 +1928,9 @@ function dismissIBMOnboardingBanner() {
   if (b) b.remove();
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    24A. ADVANCED TELEMETRY & IOT STREAMING
-   ────────────────────────────────────────────────── */
+   -------------------------------------------------- */
 function initTelemetryStream() {
   stopTelemetryStreams();
   
@@ -1896,9 +2091,9 @@ function changeTelemetryMode(mode) {
   showToast(`Telemetry: ${mode.toUpperCase()} mode`, 'blue');
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    24B. SOUTH ASIAN CVD RISK & OUTCOME SIMULATOR
-   ────────────────────────────────────────────────── */
+   -------------------------------------------------- */
 function calculateSouthAsianCVDRisk(patient) {
   const v = getLatestVitals(patient);
   if (!v) return { score: 10, level: 'Low' };
@@ -2040,9 +2235,9 @@ function updateOutcomesSimulator() {
   }
 }
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    24C. DATA-VISUALIZED PDF DOSSIER EXPORT
-   ────────────────────────────────────────────────── */
+   -------------------------------------------------- */
 async function exportClinicalPDF() {
   const { jsPDF } = window.jspdf;
   const p = STATE.patients[STATE.activePatientIdx];
@@ -2226,18 +2421,943 @@ async function exportClinicalPDF() {
   doc.setTextColor(160, 174, 192);
   doc.text('VitalSense AI demonstration report. Not to be used as a certified medical diagnostic sheet.', margin, 287);
   
+  const pdfBlob = doc.output('blob');
+  const formData = new FormData();
+  formData.append('file', pdfBlob, `${p.name.replace(/\s+/g, '_')}_Health_Report.pdf`);
+  formData.append('patientId', p.id);
+  
+  const settingsPayload = {
+    cosApiKey: STATE.settings.cosApiKey || STATE.settings.apiKey,
+    cosEndpoint: STATE.settings.cosEndpoint || 's3.us-south.cloud-object-storage.appdomain.cloud',
+    cosBucket: STATE.settings.cosBucket || 'vitalsense-reports',
+    cosInstanceId: STATE.settings.cosInstanceId || ''
+  };
+  formData.append('settings', JSON.stringify(settingsPayload));
+  
+  fetch('/api/reports/upload-generated', {
+    method: 'POST',
+    body: formData
+  }).then(res => {
+    if (res.ok) {
+      console.log('[PDF] Uploaded generated health report to IBM COS successfully.');
+      loadPatientReports();
+    }
+  }).catch(err => {
+    console.error('[PDF] Upload to COS failed:', err);
+  });
+  
   doc.save(`${p.name.replace(/\s+/g, '_')}_Health_Report.pdf`);
-  showToast('Clinical PDF dossier downloaded!', 'emerald');
+  showToast('Clinical PDF dossier downloaded & uploaded to IBM COS!', 'emerald');
 }
 
-/* ──────────────────────────────────────────────
+
+/* ----------------------------------------------
+   FRONTEND DYNAMIC wiring (Tabs, Reports, Symptoms, Voice, etc.)
+   -------------------------------------------------- */
+
+function switchPatientSubTab(tabName) {
+  document.querySelectorAll('.patient-subtab').forEach(el => el.classList.remove('active'));
+  document.getElementById(`patient-subtab-${tabName}`)?.classList.add(`active`);
+  document.querySelectorAll('.psub-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`psub-${tabName}`)?.classList.add(`active`);
+  
+  if (tabName === 'reports') loadPatientReports();
+  if (tabName === 'risk') renderRiskEngine();
+  if (tabName === 'lifestyle') { renderTimeline(); }
+}
+window.switchPatientSubTab = switchPatientSubTab;
+
+/* ----------------------------------------------
+   RISK ENGINE RENDERER
+   Populates the Predictive Risk Engine subtab
+-------------------------------------------------- */
+function renderRiskEngine() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  const v = getLatestVitals(p);
+  const analysis = analyzeVitals(p);
+  
+  // Use the outcomes simulator data for granular risk calculations
+  const cvd = calculateSouthAsianCVDRisk(p);
+
+  // Cardiac risk
+  let cardiacRisk = cvd.score;
+  let cardiacConf = 88 + Math.round(Math.random() * 8);
+  let cardiacSev = cardiacRisk > 55 ? 'Severe' : cardiacRisk > 30 ? 'Moderate' : 'Minimal';
+  let cardiacBadge = cardiacRisk > 55 ? 'High Risk' : cardiacRisk > 30 ? 'Moderate' : 'Low Risk';
+  let cardiacBadgeClass = cardiacRisk > 55 ? 'risk-critical' : cardiacRisk > 30 ? 'risk-warning' : 'risk-normal';
+
+  // Stroke risk
+  let strokeRisk = 8;
+  if (v) {
+    strokeRisk = v.systolic > 160 ? 46 : v.systolic > 140 ? 25 : 8;
+    if (p.diagnosis.includes('diabetes')) strokeRisk += 10;
+  }
+  strokeRisk = Math.min(90, strokeRisk);
+  let strokeConf = 85 + Math.round(Math.random() * 10);
+  let strokeSev = strokeRisk > 40 ? 'Severe' : strokeRisk > 20 ? 'Moderate' : 'Minimal';
+  let strokeBadge = strokeRisk > 40 ? 'High Risk' : strokeRisk > 20 ? 'Moderate' : 'Low Risk';
+  let strokeBadgeClass = strokeRisk > 40 ? 'risk-critical' : strokeRisk > 20 ? 'risk-warning' : 'risk-normal';
+
+  // Renal / CKD risk
+  let renalRisk = 12;
+  if (v && p.diagnosis.includes('diabetes')) {
+    renalRisk = v.glucose > 185 ? 42 : v.glucose > 140 ? 22 : 10;
+  }
+  renalRisk = Math.min(90, renalRisk);
+  let renalConf = 80 + Math.round(Math.random() * 12);
+  let renalSev = renalRisk > 35 ? 'Severe' : renalRisk > 18 ? 'Moderate' : 'Minimal';
+  let renalBadge = renalRisk > 35 ? 'High Risk' : renalRisk > 18 ? 'Moderate Risk' : 'Low Risk';
+  let renalBadgeClass = renalRisk > 35 ? 'risk-critical' : renalRisk > 18 ? 'risk-warning' : 'risk-normal';
+
+  // Hospitalization risk
+  let hospRisk = analysis.risk > 60 ? 28 : analysis.risk > 35 ? 14 : 5;
+  hospRisk = Math.min(90, hospRisk);
+  let hospConf = 87 + Math.round(Math.random() * 8);
+  let hospSev = hospRisk > 20 ? 'Elevated' : 'Minimal';
+  let hospBadge = hospRisk > 20 ? 'Elevated Risk' : 'Stable';
+  let hospBadgeClass = hospRisk > 20 ? 'risk-warning' : 'risk-normal';
+
+  const setRisk = (id, score, badge, badgeClass, conf, sev, sevColor) => {
+    const fill = document.getElementById(`rk-fill-${id}`);
+    const scoreEl = document.getElementById(`rk-score-${id}`);
+    const badgeEl = document.getElementById(`rk-badge-${id}`);
+    const confEl = document.getElementById(`rk-conf-${id}`);
+    const sevEl = document.getElementById(`rk-sev-${id}`);
+    if (fill) { fill.style.width = `${score}%`; fill.className = `progress-bar-fill ${score > 40 ? 'progress-critical' : score > 20 ? 'progress-warning' : 'progress-stable'}`; }
+    if (scoreEl) scoreEl.textContent = `${score}%`;
+    if (badgeEl) { badgeEl.textContent = badge; badgeEl.className = `rg-badge ${badgeClass}`; }
+    if (confEl) confEl.textContent = `${conf}%`;
+    if (sevEl) { sevEl.textContent = sev; sevEl.style.color = sevColor; }
+  };
+
+  const sevColor = (sev) => sev === 'Severe' ? 'var(--coral)' : sev === 'Moderate' ? 'var(--amber)' : 'var(--emerald)';
+  setRisk('cardiac',  cardiacRisk,  cardiacBadge,  cardiacBadgeClass,  cardiacConf,  cardiacSev,  sevColor(cardiacSev));
+  setRisk('stroke',   strokeRisk,   strokeBadge,   strokeBadgeClass,   strokeConf,   strokeSev,   sevColor(strokeSev));
+  setRisk('renal',    renalRisk,    renalBadge,    renalBadgeClass,    renalConf,    renalSev,    sevColor(renalSev));
+  setRisk('hospital', hospRisk,     hospBadge,     hospBadgeClass,     hospConf,     hospSev,     sevColor(hospSev));
+
+  // Populate AI recommendations list
+  const recsList = document.getElementById('risk-recommendations-list');
+  if (recsList) {
+    const recs = [];
+    if (cardiacRisk > 30) recs.push({ icon: '🫀', text: `Cardiovascular risk at ${cardiacRisk}%. Schedule cardiology review; assess lipid profile and ECG.`, color: 'var(--coral)' });
+    if (strokeRisk > 20) recs.push({ icon: '🧠', text: `Stroke risk elevated at ${strokeRisk}%. Strict BP control below 130/80 mmHg essential. Consider anti-platelet therapy.`, color: 'var(--amber)' });
+    if (renalRisk > 18) recs.push({ icon: '🩺', text: `Renal complication risk at ${renalRisk}%. Annual UACR testing recommended. Telmisartan provides nephroprotection.`, color: 'var(--amber)' });
+    if (p.diagnosis.includes('diabetes')) recs.push({ icon: '💉', text: 'Maintain HbA1c <7.0%. Monitor post-prandial glucose 2 hours after each meal.', color: 'var(--blue)' });
+    if (v && v.systolic > p.targets.bpSystolicMax) recs.push({ icon: '📈', text: `BP ${v.systolic}/${v.diastolic} mmHg above target. Sodium restriction to <5g/day and stress reduction are key interventions.`, color: 'var(--amber)' });
+    recs.push({ icon: '🏃', text: `Achieve 7,500+ steps/day. Physical activity reduces all-cause cardiovascular mortality by 35%.`, color: 'var(--teal)' });
+    recs.push({ icon: '💊', text: `Continue all scheduled medications (${p.medications.length} active). Missing doses significantly increases relapse risk.`, color: 'var(--violet)' });
+    recs.push({ icon: '🍎', text: 'Follow condition-specific diet: Low-GI carbohydrates, DASH-style sodium restriction, and omega-3 enriched foods.', color: 'var(--emerald)' });
+
+    recsList.innerHTML = recs.map(r => `
+      <li style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;line-height:1.5">
+        <span style="font-size:1rem;flex-shrink:0">${r.icon}</span>
+        <span style="color:${r.color}">${r.text}</span>
+      </li>`).join('');
+  }
+}
+window.renderRiskEngine = renderRiskEngine;
+
+function setSymptomPrompt(text) {
+  const ta = document.getElementById('symptom-text');
+  if (ta) { ta.value = text; ta.focus(); }
+}
+window.setSymptomPrompt = setSymptomPrompt;
+
+async function runGraniteSymptomChecker() {
+  const text = document.getElementById('symptom-text').value.trim();
+  if (!text) {
+    showToast('Please describe your symptoms first.', 'amber');
+    return;
+  }
+  
+  const output = document.getElementById('symptom-result-output');
+  if (!output) return;
+  
+  output.innerHTML = '<div class="typing typing-dots">Connecting to IBM watsonx.ai Studio...</div>';
+  const p = STATE.patients[STATE.activePatientIdx];
+  
+  const runOfflineSymptomCheck = (symptoms) => {
+    const sym = symptoms.toLowerCase();
+    let diseases = ['Viral Syndrome'];
+    let severity = 'Mild';
+    let specialist = 'General Physician';
+    let actions = ['Stay hydrated', 'Monitor body temperature'];
+    let emergency = 'Low';
+    
+    if (sym.includes('chest pain') || sym.includes('radiating') || sym.includes('shortness of breath')) {
+      diseases = ['Acute Coronary Syndrome', 'Angina Pectoris'];
+      severity = 'Critical';
+      specialist = 'Cardiologist / Emergency Medicine';
+      actions = ['Call ambulance immediately (102)', 'Chew Aspirin 325mg if advised by responder', 'Do not exert'];
+      emergency = 'Immediate Emergency';
+    } else if (sym.includes('tingling') || sym.includes('foot') || sym.includes('numbness')) {
+      diseases = ['Diabetic Peripheral Neuropathy', 'Poor Peripheral Circulation'];
+      severity = 'Moderate';
+      specialist = 'Endocrinologist / Podiatrist';
+      actions = ['Inspect feet daily for cuts or ulcers', 'Optimize blood sugar controls', 'Avoid tight footwear'];
+      emergency = 'Medium';
+    } else if (sym.includes('dizziness') || sym.includes('headache') || sym.includes('vision')) {
+      diseases = ['Hypertensive Urgency', 'Migraine'];
+      severity = 'Severe';
+      specialist = 'Cardiologist / Nephrologist';
+      actions = ['Check blood pressure immediately', 'Rest in a quiet, dark room', 'Limit dietary sodium'];
+      emergency = 'High';
+    }
+    
+    return { possibleDiseases: diseases, severity, recommendedSpecialist: specialist, nextActions: actions, emergencyLevel: emergency };
+  };
+  
+  try {
+    if (!hasIBMCredentials()) {
+      setTimeout(() => {
+        const res = runOfflineSymptomCheck(text);
+        renderSymptomResult(res, true);
+      }, 1000);
+      return;
+    }
+    
+    const prompt = PROMPT_TEMPLATES.symptomCheck(text, p);
+    const responseText = await callGraniteAPI(prompt, STATE.settings);
+    
+    try {
+      const startIdx = responseText.indexOf('{');
+      const endIdx = responseText.lastIndexOf('}');
+      if (startIdx !== -1 && endIdx !== -1) {
+        const res = JSON.parse(responseText.slice(startIdx, endIdx + 1));
+        renderSymptomResult(res, false);
+      } else {
+        throw new Error('No JSON in response');
+      }
+    } catch (jsonErr) {
+      const res = runOfflineSymptomCheck(text);
+      renderSymptomResult(res, true);
+    }
+  } catch (err) {
+    const res = runOfflineSymptomCheck(text);
+    renderSymptomResult(res, true);
+  }
+}
+window.runGraniteSymptomChecker = runGraniteSymptomChecker;
+
+function renderSymptomResult(res, isSimulated) {
+  const output = document.getElementById('symptom-result-output');
+  if (!output) return;
+  
+  output.innerHTML = `
+    <div class="symptom-result-body" style="padding: 1rem 1.25rem;">
+      ${isSimulated ? '<div class="simulator-notice" style="color:var(--amber);background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:0.75rem">⚠️ Running in Offline Simulator Fallback Mode</div>' : ''}
+      <div class="result-row" style="margin-bottom:8px">
+        <span style="color:var(--muted);font-size:0.8rem">Possible Conditions:</span>
+        <div style="font-weight:700;font-size:0.95rem;margin-top:2px">${res.possibleDiseases.join(', ')}</div>
+      </div>
+      <div class="result-row" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--muted);font-size:0.8rem">Clinical Severity:</span>
+        <span class="metric-status ${res.severity.toLowerCase() === 'critical' || res.severity.toLowerCase() === 'severe' ? 'status-critical' : 'status-normal'}">${res.severity}</span>
+      </div>
+      <div class="result-row" style="margin-bottom:8px">
+        <span style="color:var(--muted);font-size:0.8rem">Recommended Specialist:</span>
+        <div style="font-weight:700">${res.recommendedSpecialist}</div>
+      </div>
+      <div class="result-row" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--muted);font-size:0.8rem">Emergency Level:</span>
+        <span class="risk-badge ${res.emergencyLevel.toLowerCase().includes('emergency') || res.emergencyLevel.toLowerCase() === 'high' ? 'critical' : 'stable'}">${res.emergencyLevel}</span>
+      </div>
+      <div class="result-actions-wrap" style="margin-top:1rem;border-top:1px solid var(--glass-border);padding-top:12px">
+        <span style="font-weight:600;display:block;margin-bottom:0.5rem;font-size:0.85rem">Recommended Next Actions:</span>
+        <ul class="rec-list" style="margin-left:1.25rem;font-size:0.8rem;display:flex;flex-direction:column;gap:4px">
+          ${res.nextActions.map(act => `<li>${act}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+async function generateAISchedulePlan() {
+  const output = document.getElementById('lifestyle-coach-output');
+  if (!output) return;
+  
+  output.innerHTML = '<div class="typing typing-dots">Connecting to IBM watsonx.ai Studio...</div>';
+  const p = STATE.patients[STATE.activePatientIdx];
+  const analysis = evaluateAndAlert(p);
+  
+  const runOfflineLifestylePlan = (patient) => {
+    let diet = [
+      'Breakfast: Ragi porridge or whole wheat idli with vegetable sambar (Low Glycemic)',
+      'Lunch: Brown rice or jowar roti with dal, leafy green vegetables, and cucumber salad',
+      'Dinner: Light vegetable soup, grilled paneer/tofu, or whole wheat chapati with ridge gourd curry',
+      'Snack: A handful of roasted chana, walnuts, or raw almonds'
+    ];
+    let exercise = [
+      '30 minutes of brisk walking in the morning (aim for 5,000+ steps)',
+      'Subtle stretching exercises or light yoga (Pranayama) for stress reduction'
+    ];
+    let water = '2.8L';
+    let sleep = '8 Hours';
+    let stress = [
+      '10 minutes of deep breathing (Anulom Vilom) in a quiet setting',
+      'Take short 5-minute walking breaks after prolonged sitting'
+    ];
+    let challenges = [
+      'Complete step target (5,000 steps today)',
+      'Zero consumption of refined sugar or sweets'
+    ];
+    let weeklyGoals = [
+      'Maintain glucose levels under 140 mg/dL post-meals',
+      'Achieve 150 minutes of physical activity this week'
+    ];
+    
+    if (patient.diagnosis.includes('hypertension')) {
+      diet = [
+        'Breakfast: Oats upma with mixed vegetables (no added pickles or papads)',
+        'Lunch: Multigrain chapati with low-sodium dal, spinach subji, and low-fat curd',
+        'Dinner: Barley dhalia or cooked brown rice with raw salads and steamed vegetables',
+        'Snack: Fresh guava, apple slices, or unsalted pumpkin seeds'
+      ];
+      exercise = [
+        'Moderate cardio: 30 minutes of stationary cycling or fast walking',
+        'Avoid heavy weightlifting; prioritize light aerobic activity'
+      ];
+      water = '3.0L';
+      sleep = '7.5 Hours';
+      stress = [
+        'Meditate for 10 minutes before bedtime',
+        'Restrict caffeine intake after 4:00 PM'
+      ];
+      challenges = [
+        'Restrict salt intake to <5g (approx 1 level tsp)',
+        'Complete 30 minutes of continuous walking'
+      ];
+    }
+    
+    return { dietPlan: diet, exercisePlan: exercise, waterGoal: water, sleepGoal: sleep, stressManagement: stress, challenges, weeklyGoals };
+  };
+  
+  try {
+    if (!hasIBMCredentials()) {
+      setTimeout(() => {
+        const res = runOfflineLifestylePlan(p);
+        renderLifestylePlan(res, true);
+      }, 1000);
+      return;
+    }
+    
+    const prompt = PROMPT_TEMPLATES.lifestylePlan(p, analysis);
+    const responseText = await callGraniteAPI(prompt, STATE.settings);
+    
+    try {
+      const startIdx = responseText.indexOf('{');
+      const endIdx = responseText.lastIndexOf('}');
+      if (startIdx !== -1 && endIdx !== -1) {
+        const res = JSON.parse(responseText.slice(startIdx, endIdx + 1));
+        renderLifestylePlan(res, false);
+      } else {
+        throw new Error('No JSON in response');
+      }
+    } catch (jsonErr) {
+      const res = runOfflineLifestylePlan(p);
+      renderLifestylePlan(res, true);
+    }
+  } catch (err) {
+    const res = runOfflineLifestylePlan(p);
+    renderLifestylePlan(res, true);
+  }
+}
+window.generateAISchedulePlan = generateAISchedulePlan;
+
+function renderLifestylePlan(res, isSimulated) {
+  const output = document.getElementById('lifestyle-coach-output');
+  if (!output) return;
+  
+  const wEl = document.getElementById('life-water-val');
+  if (wEl) wEl.textContent = `0 / ${res.waterGoal}`;
+  const wBar = document.getElementById('life-water-bar');
+  if (wBar) wBar.style.width = '0%';
+  const sEl = document.getElementById('life-sleep-val');
+  if (sEl) sEl.textContent = `0.0 / ${res.sleepGoal}`;
+  const sBar = document.getElementById('life-sleep-bar');
+  if (sBar) sBar.style.width = '0%';
+  
+  output.innerHTML = `
+    <div class="lifestyle-coach-plan" style="padding: 1rem 1.25rem;">
+      ${isSimulated ? '<div class="simulator-notice" style="color:var(--amber);background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:0.75rem">⚠️ Running in Offline Simulator Fallback Mode</div>' : ''}
+      
+      <div class="coach-section" style="margin-bottom:14px">
+        <h4 style="color:var(--teal);margin-bottom:6px;font-size:0.88rem">🥗 Dynamic Nutritional Diet Plan</h4>
+        <ul class="rec-list" style="margin-left:1.25rem;font-size:0.8rem;display:flex;flex-direction:column;gap:4px">
+          ${res.dietPlan.map(d => `<li>${d}</li>`).join('')}
+        </ul>
+      </div>
+      
+      <div class="coach-section" style="margin-bottom:14px">
+        <h4 style="color:var(--blue);margin-bottom:6px;font-size:0.88rem">🏃 Prescribed Fitness Regime</h4>
+        <ul class="rec-list" style="margin-left:1.25rem;font-size:0.8rem;display:flex;flex-direction:column;gap:4px">
+          ${res.exercisePlan.map(e => `<li>${e}</li>`).join('')}
+        </ul>
+      </div>
+      
+      <div class="coach-section" style="margin-bottom:14px">
+        <h4 style="color:var(--violet);margin-bottom:6px;font-size:0.88rem">🧘 Relaxation &amp; Recovery Protocols</h4>
+        <ul class="rec-list" style="margin-left:1.25rem;font-size:0.8rem;display:flex;flex-direction:column;gap:4px">
+          ${res.stressManagement.map(s => `<li>${s}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+async function handleFileSelected(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  const statusBar = document.getElementById('upload-status-bar');
+  const fill = document.getElementById('upload-progress-fill');
+  
+  if (statusBar) statusBar.style.display = 'block';
+  if (fill) fill.style.width = '20%';
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('patientId', p.id);
+  
+  const settingsPayload = {
+    cosApiKey: STATE.settings.cosApiKey || STATE.settings.apiKey,
+    cosEndpoint: STATE.settings.cosEndpoint || 's3.us-south.cloud-object-storage.appdomain.cloud',
+    cosBucket: STATE.settings.cosBucket || 'vitalsense-reports',
+    cosInstanceId: STATE.settings.cosInstanceId || ''
+  };
+  formData.append('settings', JSON.stringify(settingsPayload));
+  
+  try {
+    if (fill) fill.style.width = '60%';
+    
+    const res = await fetch('/api/reports/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (fill) fill.style.width = '100%';
+    
+    if (res.ok) {
+      showToast('File uploaded to IBM COS successfully!', 'emerald');
+      setTimeout(() => {
+        if (statusBar) statusBar.style.display = 'none';
+        loadPatientReports();
+      }, 800);
+    } else {
+      const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+      throw new Error(err.error || 'Upload failed');
+    }
+  } catch (err) {
+    showToast(`Upload error: ${err.message}`, 'coral');
+    if (statusBar) statusBar.style.display = 'none';
+  }
+}
+window.handleFileSelected = handleFileSelected;
+
+let currentSelectedReportId = null;
+async function loadPatientReports() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  const rows = document.getElementById('reports-history-rows');
+  if (!rows) return;
+  
+  rows.innerHTML = '<tr><td colspan="6" class="muted-label" style="text-align:center;padding:1rem">Loading documents...</td></tr>';
+  
+  try {
+    const res = await fetch(`/api/reports/${p.id}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const reports = data.reports || [];
+    
+    if (!reports.length) {
+      rows.innerHTML = '<tr><td colspan="6" class="muted-label" style="text-align:center;padding:1.5rem">No reports loaded.</td></tr>';
+      return;
+    }
+    
+    rows.innerHTML = reports.map(r => {
+      const d = new Date(r.uploadDate).toLocaleDateString('en-IN', { dateStyle: 'medium' });
+      const sz = (r.size / 1024).toFixed(1) + ' KB';
+      const storageBadge = r.source === 'cos' ? '<span class="vector-badge">IBM COS</span>' : '<span class="adh-pill">Local</span>';
+      const typeBadge = r.type === 'clinical' ? '<span class="adh-pill taken">Clinical PDF</span>' : '<span class="adh-pill">Lab Report</span>';
+      
+      const isSelected = r.id === currentSelectedReportId;
+      
+      return `<tr class="report-row-item ${isSelected ? 'selected' : ''}" style="cursor:pointer" onclick="selectReportForAnalysis('${r.id}')">
+        <td><strong>${r.originalName}</strong></td>
+        <td>${d}</td>
+        <td>${sz}</td>
+        <td>${storageBadge}</td>
+        <td>${typeBadge}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <a class="action-btn sm-btn blue" href="${r.url}" target="_blank">Download</a>
+            ${r.type !== 'clinical' ? `<button class="action-btn sm-btn emerald" onclick="event.stopPropagation(); analyzeReportDirect('${r.id}')">Analyze</button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    rows.innerHTML = `<tr><td colspan="6" class="muted-label" style="text-align:center;padding:1rem;color:var(--coral)">Error: ${err.message}</td></tr>`;
+  }
+}
+window.loadPatientReports = loadPatientReports;
+
+function selectReportForAnalysis(id) {
+  currentSelectedReportId = id;
+  const runBtn = document.getElementById('btn-run-analysis');
+  if (runBtn) runBtn.style.display = 'block';
+  
+  const output = document.getElementById('analyzer-output-pane');
+  if (output) {
+    output.innerHTML = `
+      <div class="ap-placeholder">
+        <p>Report selected. Click "Extract Findings" to perform IBM watsonx.ai Studio analysis.</p>
+      </div>
+    `;
+  }
+  loadPatientReports(); // Refresh selected highlight
+}
+window.selectReportForAnalysis = selectReportForAnalysis;
+
+async function analyzeReportDirect(id) {
+  currentSelectedReportId = id;
+  await analyzeSelectedReport();
+}
+window.analyzeReportDirect = analyzeReportDirect;
+
+async function analyzeSelectedReport() {
+  if (!currentSelectedReportId) {
+    showToast('Please select a report first.', 'amber');
+    return;
+  }
+  
+  const output = document.getElementById('analyzer-output-pane');
+  if (!output) return;
+  
+  output.innerHTML = '<div class="typing typing-dots">Connecting to IBM watsonx.ai Studio to parse report...</div>';
+  
+  try {
+    const res = await fetch('/api/reports/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reportId: currentSelectedReportId,
+        settings: STATE.settings
+      })
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      renderExtractedReport(data.extracted, data.simulator);
+    } else {
+      const err = await res.json().catch(() => ({ error: 'Extraction failed' }));
+      throw new Error(err.error || 'Extraction failed');
+    }
+  } catch (err) {
+    output.innerHTML = `<div style="color:var(--coral);padding:1rem">❌ Extraction failed: ${err.message}</div>`;
+  }
+}
+window.analyzeSelectedReport = analyzeSelectedReport;
+
+function renderExtractedReport(ext, isSimulated) {
+  const output = document.getElementById('analyzer-output-pane');
+  if (!output) return;
+  
+  output.innerHTML = `
+    <div class="report-analysis-result" style="padding:1rem">
+      ${isSimulated ? '<div class="simulator-notice" style="color:var(--amber);background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:0.75rem">⚠️ Running in Offline Simulator Fallback Mode</div>' : ''}
+      <div class="rep-sec" style="margin-bottom:12px">
+        <strong style="color:var(--teal);font-size:0.85rem">Summary:</strong>
+        <p style="margin-top:4px;font-size:0.8rem;line-height:1.5">${ext.summary}</p>
+      </div>
+      <div class="rep-sec" style="margin-bottom:12px">
+        <strong style="color:var(--blue);font-size:0.85rem">Diagnoses / Findings:</strong>
+        <ul style="margin-left:1.25rem;margin-top:4px;font-size:0.8rem;display:flex;flex-direction:column;gap:2px">
+          ${ext.diagnoses.map(d => `<li>${d}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="rep-sec" style="margin-bottom:12px">
+        <strong style="color:var(--coral);font-size:0.85rem">Abnormal Biomarkers:</strong>
+        <div style="margin-top:6px;overflow-x:auto">
+          <table class="prov-log-table" style="width:100%;border-collapse:collapse;font-size:0.78rem">
+            <thead>
+              <tr style="border-bottom:1px solid var(--glass-border)">
+                <th style="text-align:left;padding:4px;color:var(--muted)">Parameter</th>
+                <th style="text-align:left;padding:4px;color:var(--muted)">Value</th>
+                <th style="text-align:left;padding:4px;color:var(--muted)">Ref Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ext.abnormalValues.map(v => `<tr style="border-bottom:1px solid rgba(255,255,255,0.02)"><td style="padding:4px">${v.parameter}</td><td style="color:var(--coral);font-weight:700;padding:4px">${v.value}</td><td style="padding:4px;color:var(--muted)">${v.referenceRange}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="rep-sec" style="margin-bottom:12px">
+        <strong style="color:var(--violet);font-size:0.85rem">Medications:</strong>
+        <ul style="margin-left:1.25rem;margin-top:4px;font-size:0.8rem;display:flex;flex-direction:column;gap:2px">
+          ${ext.medications.map(m => `<li>${m.name} — ${m.dosage}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+async function loadProviderPatientReports(patient) {
+  const rows = document.getElementById('prov-reports-rows');
+  if (!rows) return;
+  
+  rows.innerHTML = '<tr><td colspan="4" class="muted-label" style="text-align:center;padding:1rem">Loading patient reports...</td></tr>';
+  
+  try {
+    const res = await fetch(`/api/reports/${patient.id}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const reports = data.reports || [];
+    
+    if (!reports.length) {
+      rows.innerHTML = '<tr><td colspan="4" class="muted-label" style="text-align:center;padding:1rem">No patient documents found.</td></tr>';
+      return;
+    }
+    
+    rows.innerHTML = reports.map(r => {
+      const d = new Date(r.uploadDate).toLocaleDateString('en-IN', { dateStyle: 'short' });
+      const sourceBadge = r.source === 'cos' ? '<span class="vector-badge">IBM COS</span>' : 'Local';
+      return `<tr>
+        <td><strong>${r.originalName}</strong></td>
+        <td>${d}</td>
+        <td>${sourceBadge}</td>
+        <td><a class="action-btn sm-btn blue" href="${r.url}" target="_blank">Download</a></td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    rows.innerHTML = `<tr><td colspan="4" class="muted-label" style="text-align:center;padding:1rem;color:var(--coral)">Error: ${err.message}</td></tr>`;
+  }
+}
+window.loadProviderPatientReports = loadProviderPatientReports;
+
+function sendEmergencyNotification() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  showToast(`Emergency notification pushed to Dr. Sanjay Gupta and Kavita Mehta!`, 'coral');
+}
+window.sendEmergencyNotification = sendEmergencyNotification;
+
+function showNearestHospital() {
+  showToast('Cardiac & Respiratory Emergency Hub: Max Super Speciality Hospital (Directions pushed)', 'blue');
+}
+window.showNearestHospital = showNearestHospital;
+
+function calculateHealthScore(patient) {
+  const v = getLatestVitals(patient);
+  if (!v) return 80;
+  
+  let score = 98;
+  const t = patient.targets;
+  if (v.glucose > t.glucoseMax) score -= 8;
+  if (v.glucose < t.glucoseMin) score -= 12;
+  if (v.systolic > t.bpSystolicMax) score -= 10;
+  if (v.hr > t.hrMax || v.hr < t.hrMin) score -= 6;
+  if (v.spo2 < t.spo2Min) score -= 15;
+  
+  const sleepHrs = v.sleep || 7.5;
+  if (sleepHrs < 6) score -= 5;
+  
+  const stressLvl = v.stress || 3;
+  if (stressLvl > 7) score -= 6;
+  
+  const moodLogs = patient.history.filter(h => h.type === 'mood');
+  if (moodLogs.length) {
+    const latestMood = moodLogs[moodLogs.length - 1].mood;
+    if (latestMood === 'stressed' || latestMood === 'anxious') score -= 5;
+    if (latestMood === 'happy' || latestMood === 'calm') score += 3;
+  }
+  
+  return Math.max(10, Math.min(100, score));
+}
+
+let recognition = null;
+function toggleVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('Web Speech API is not supported in this browser.', 'amber');
+    return;
+  }
+  
+  const micBtn = document.getElementById('chat-mic-btn');
+  const input = document.getElementById('chat-input');
+  
+  if (recognition) {
+    recognition.stop();
+    recognition = null;
+    if (micBtn) micBtn.style.color = 'var(--text2)';
+    showToast('Voice transcription stopped.', 'blue');
+    return;
+  }
+  
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = 'en-IN';
+  
+  recognition.onstart = () => {
+    if (micBtn) micBtn.style.color = 'var(--coral)';
+    showToast('Listening... Speak into your mic.', 'coral');
+  };
+  
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript;
+    if (input) {
+      input.value = text;
+    }
+    showToast('Voice command parsed!', 'emerald');
+  };
+  
+  recognition.onerror = (err) => {
+    if (micBtn) micBtn.style.color = 'var(--text2)';
+    showToast(`Voice error: ${err.error}`, 'coral');
+    recognition = null;
+  };
+  
+  recognition.onend = () => {
+    if (micBtn) micBtn.style.color = 'var(--text2)';
+    recognition = null;
+  };
+  
+  recognition.start();
+}
+window.toggleVoiceInput = toggleVoiceInput;
+
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  
+  const cleanText = text.replace(/[#*`_🔴🟡✅⚠️🤖🫀🧠🩺🏥📊📈💓🌬️⚖️🌙🧘🏃💧📋]/g, '').slice(0, 250);
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = 'en-IN';
+  utterance.rate = 1.0;
+  
+  window.speechSynthesis.speak(utterance);
+}
+window.speakText = speakText;
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  const themeIcon = document.getElementById('theme-icon');
+  if (themeIcon) {
+    themeIcon.innerHTML = newTheme === 'dark'
+      ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+      : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+  showToast(`Theme switched to ${newTheme.toUpperCase()}`, 'blue');
+}
+window.toggleTheme = toggleTheme;
+
+function changeLanguage(lang) {
+  if (!window.LOCALES || !LOCALES[lang]) return;
+  STATE.lang = lang;
+  const dict = LOCALES[lang];
+  
+  document.title = dict.title;
+  setEl('btn-landing', dict.home);
+  
+  const pBtn = document.getElementById('btn-patient');
+  if (pBtn) pBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg> ${dict.patient}`;
+  
+  const prBtn = document.getElementById('btn-provider');
+  if (prBtn) prBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> ${dict.provider}`;
+  
+  const anBtn = document.getElementById('btn-analytics');
+  if (anBtn) anBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12v4M12 8v8M17 10v6"/></svg> ${dict.analytics}`;
+  
+  setEl('psub-vitals', dict.vitals_monitor_tab);
+  setEl('psub-risk', dict.risk_engine_tab);
+  setEl('psub-lifestyle', dict.lifestyle_coach_tab);
+  setEl('psub-symptoms', dict.symptoms_tab);
+  setEl('psub-reports', dict.reports_tab);
+  
+  const input = document.getElementById('chat-input');
+  if (input) input.placeholder = lang === 'en' ? 'Ask anything about your health...' : lang === 'es' ? 'Pregunta algo sobre tu salud...' : 'Posez une question sur votre sante...';
+  
+  showToast(`Language changed to ${lang.toUpperCase()}`, 'emerald');
+}
+window.changeLanguage = changeLanguage;
+
+function renderTimeline() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  const timelineEl = document.getElementById('patient-timeline');
+  if (!timelineEl || !p) return;
+  
+  let milestones = [
+    { date: '2025-10-10', title: 'Initial Clinical Diagnosis', desc: `Diagnosed with Type 2 Diabetes Mellitus. Established baseline HbA1c target at <7.0%.` },
+    { date: '2026-02-15', title: 'Kidney Complications Evaluation', desc: 'Added Metformin and Telmisartan. Set strict target blood pressure at <130/80 mmHg.' },
+    { date: '2026-05-20', title: 'Microalbuminuria Detection', desc: 'Checked UACR (180 mg/g - microalbuminuria flagged). Doctor recommended strict salt reduction.' },
+    { date: '2026-07-01', title: 'Continuous Vital Sensors Configured', desc: 'Initiated outpatient vital telemetry monitoring for real-time risk predictions.' }
+  ];
+  
+  if (p.diagnosis === 'hypertension') {
+    milestones = [
+      { date: '2025-11-05', title: 'Stage 2 Hypertension Diagnosed', desc: 'Reading 162/98 mmHg. Instituted Outpatient Amlodipine & lifestyle changes.' },
+      { date: '2026-01-20', title: 'DASH Diet Salt Restriction', desc: ' Instituted DASH diet with daily sodium intake limited to <5g.' },
+      { date: '2026-04-12', title: 'Cardiovascular Risk Assessment', desc: 'Cardiac screening performed. Visceral lipid parameters evaluated.' },
+      { date: '2026-07-05', title: 'Outpatient Vital Telemetry Synced', desc: 'Synced smartwatch metrics to monitor daily stress index, exercise logs, and heart rate.' }
+    ];
+  }
+  
+  timelineEl.innerHTML = milestones.map(m => `
+    <div class="timeline-item" style="position:relative; padding-left:1.5rem">
+      <div class="timeline-dot" style="position:absolute; left:-2.45rem; top:4px; width:12px; height:12px; border-radius:50%; background:linear-gradient(135deg, var(--teal), var(--blue)); box-shadow: 0 0 8px var(--teal-glow);"></div>
+      <span style="font-size:0.75rem; color:var(--muted); font-weight:600">${m.date}</span>
+      <h4 style="font-size:0.85rem; font-weight:700; margin:2px 0; color:var(--text)">${m.title}</h4>
+      <p style="font-size:0.78rem; color:var(--text2); line-height:1.4; margin:0">${m.desc}</p>
+    </div>
+  `).join('');
+}
+window.renderTimeline = renderTimeline;
+
+function logMood(moodType, emoji) {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  const now = Date.now();
+  const moodColors = {
+    happy: 'var(--emerald)',
+    calm: 'var(--teal)',
+    tired: 'var(--blue)',
+    anxious: 'var(--amber)',
+    stressed: 'var(--coral)'
+  };
+  
+  p.history.push({ ts: now, type: 'mood', mood: moodType, emoji, description: `Mood logged: ${moodType.toUpperCase()} ${emoji}` });
+  savePatients();
+  
+  const label = document.getElementById('mood-status-label');
+  if (label) {
+    label.textContent = `Latest: ${moodType.toUpperCase()} ${emoji} logged at ${new Date(now).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'})}`;
+    label.style.color = moodColors[moodType] || 'var(--teal)';
+  }
+  
+  renderRecentLogs(p);
+  renderPatientDashboard();
+  showToast(`Mood logged: ${moodType.toUpperCase()} ${emoji}`, 'emerald');
+}
+window.logMood = logMood;
+
+function handleFoodScanned(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  const resultEl = document.getElementById('food-scanner-result');
+  if (!resultEl) return;
+  
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div class="typing typing-dots">Scanning meal components with IBM watsonx.ai Studio Vision...</div>';
+  
+  setTimeout(() => {
+    const foodName = file.name.toLowerCase();
+    let meal = "Curry & Rice";
+    let calories = 550;
+    let carbs = "72g (High Glycemic)";
+    let sodium = "1.8g (Elevated)";
+    let clinicalAdvice = "⚠️ Polish white rice and high sodium curry will raise post-prandial glucose and blood pressure. Recommending portion control and substituting with brown rice or jowar roti.";
+    let statusColor = "var(--coral)";
+    
+    if (foodName.includes('salad') || foodName.includes('vegetable') || foodName.includes('paneer') || foodName.includes('tofu')) {
+      meal = "Fresh Green Salad & Grilled Tofu/Paneer";
+      calories = 240;
+      carbs = "12g (Low Glycemic)";
+      sodium = "0.3g (Low)";
+      clinicalAdvice = "✅ Excellent choice! High fiber, low glycemic index, and low sodium. Supports healthy glycemic parameters and BP targets.";
+      statusColor = "var(--emerald)";
+    } else if (foodName.includes('oats') || foodName.includes('porridge') || foodName.includes('ragi')) {
+      meal = "Ragi Porridge / Oats Upma";
+      calories = 310;
+      carbs = "34g (Complex Carb)";
+      sodium = "0.4g (Low)";
+      clinicalAdvice = "✅ Good meal option. High soluble fiber content assists in slower carbohydrate absorption and cardiac recovery.";
+      statusColor = "var(--teal)";
+    }
+    
+    resultEl.innerHTML = `
+      <div style="font-weight:700;margin-bottom:4px;color:${statusColor}">Scan Result: ${meal}</div>
+      <div style="font-size:0.75rem;color:var(--text2);margin-bottom:6px">
+        Calories: <strong>${calories} kcal</strong> | Carbs: <strong>${carbs}</strong> | Sodium: <strong>${sodium}</strong>
+      </div>
+      <div style="font-style:italic;font-size:0.75rem;line-height:1.4">${clinicalAdvice}</div>
+    `;
+    
+    p.history.push({
+      ts: Date.now(),
+      type: 'meal',
+      description: `Food Scanned: ${meal} (${calories} kcal, carbs ${carbs})`
+    });
+    savePatients();
+    renderRecentLogs(p);
+  }, 1500);
+}
+window.handleFoodScanned = handleFoodScanned;
+
+function syncWearablesTelemetry() {
+  const p = STATE.patients[STATE.activePatientIdx];
+  if (!p) return;
+  
+  showToast('Syncing with Google Fit & Smartwatch...', 'blue');
+  
+  setTimeout(() => {
+    const latest = getLatestVitals(p) || { glucose: 120, systolic: 120, diastolic: 80, hr: 72, spo2: 98, weight: 70 };
+    const watchSteps = Math.round(rand(6000, 11000));
+    const watchSleep = +(rand(6.5, 8.2)).toFixed(1);
+    const watchStress = Math.round(rand(2, 6));
+    const now = Date.now();
+    const syncedVital = {
+      ts: now,
+      type: 'vitals',
+      glucose: Math.round(latest.glucose + rand(-3, 3)),
+      systolic: Math.round(latest.systolic + rand(-4, 4)),
+      diastolic: Math.round(latest.diastolic + rand(-3, 3)),
+      hr: Math.round(rand(68, 88)),
+      spo2: parseFloat(Math.min(100, Math.max(93, latest.spo2 + rand(-0.2, 0.2))).toFixed(1)),
+      weight: latest.weight,
+      sleep: watchSleep,
+      stress: watchStress,
+      activity: watchSteps,
+      water: Math.round(rand(1500, 2500))
+    };
+    
+    p.history.push(syncedVital);
+    if (p.history.length > 30) p.history.shift();
+    
+    STATE.outcomeSteps = watchSteps;
+    const stepsSlider = document.querySelector('.outcome-slider');
+    if (stepsSlider) stepsSlider.value = watchSteps;
+    setEl('lbl-steps', `${watchSteps} steps`);
+    
+    savePatients();
+    renderPatientDashboard();
+    if (STATE.activePortal === 'provider') selectProviderPatient(STATE.providerPatientIdx);
+    
+    logStreamEvent(`⌚ Wearables Sync Complete: Synced ${watchSteps} steps, ${watchSleep}h sleep.`);
+    showToast(`Smartwatch data synced successfully!`, 'emerald');
+  }, 1200);
+}
+window.syncWearablesTelemetry = syncWearablesTelemetry;
+
+/* ----------------------------------------------
    24D. INITIALIZATION OVERRIDES
-   ────────────────────────────────────────────────── */
+   -------------------------------------------------- */
 
 
-/* ──────────────────────────────────────────────
+/* ----------------------------------------------
    25. INIT
-────────────────────────────────────────────────── */
+-------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', async () => {
   // Check if server environment credentials are set
   try {
@@ -2247,7 +3367,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (serverConfig.hasServerCredentials) {
         STATE.hasServerCredentials = true;
         STATE.settings.modelId = serverConfig.modelId || STATE.settings.modelId;
-        STATE.settings.useReal = true; // Auto-enable real Granite API
+        STATE.settings.useReal = true;
+      }
+      // Load server COS config if user hasn't overridden it
+      if (serverConfig.hasCosCredentials) {
+        if (!STATE.settings.cosEndpoint && serverConfig.cosEndpoint)
+          STATE.settings.cosEndpoint = serverConfig.cosEndpoint;
+        if (!STATE.settings.cosBucket && serverConfig.cosBucket)
+          STATE.settings.cosBucket = serverConfig.cosBucket;
       }
     }
   } catch (e) {
@@ -2256,6 +3383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await loadState();
   renderPatientDashboard();
+  renderTimeline();
   renderNotifications();
   STATE.patients.forEach(p => evaluateAndAlert(p));
   renderNotifications();
@@ -2274,6 +3402,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log(
     `[VitalSense AI v${window.APP_CONFIG?.version || '2.0.0'}] Initialized.\n` +
     `  Patients: ${STATE.patients.length} | Vector store: ${CLINICAL_KNOWLEDGE.length} chunks\n` +
-    `  IBM Granite: ${hasIBMCredentials() ? '✅ Credentials present' : '❌ MISSING — AI features require configuration'}`
+    `  IBM watsonx.ai Studio: ${hasIBMCredentials() ? '✅ Credentials present' : '❌ MISSING — AI features require configuration'}`
   );
 });

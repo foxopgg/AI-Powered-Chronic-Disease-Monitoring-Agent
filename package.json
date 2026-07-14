@@ -9,8 +9,11 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1086.0",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "dotenv": "^16.4.5"
+    "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
