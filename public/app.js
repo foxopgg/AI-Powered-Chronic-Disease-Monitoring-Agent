@@ -1351,7 +1351,7 @@ function updateApiStatus() {
   const el = document.getElementById('api-status');
   if (!el) return;
   if (STATE.hasServerCredentials) {
-    el.textContent = `✅ IBM watsonx.ai Studio ready via server environment variables — model: ${STATE.settings.modelId || 'ibm/granite-3-2-8b-instruct'}`;"
+    el.textContent = `✅ IBM watsonx.ai Studio ready via server environment variables — model: ${STATE.settings.modelId || 'ibm/granite-3-2-8b-instruct'}`;
     el.className = 'api-status connected';
   } else {
     el.textContent = '⚠️ IBM Cloud credentials are not configured on the server. Configure .env and restart the app.';
@@ -1457,11 +1457,9 @@ function sendChat() {
       typingEl.remove();
       const fallbackAllowed = window.APP_CONFIG?.simulatorFallback === true;
       if (fallbackAllowed) {
+        console.warn(`IBM watsonx.ai Studio API unavailable: ${err.message}. Falling back to offline Granite Simulator.`);
         const simResponse = graniteChat(text, p);
-        appendChatMsg(
-          `⚠️ IBM watsonx.ai Studio API unavailable: ${err.message}\n\n[SIMULATOR FALLBACK — not a real IBM response]\n\n${simResponse}`,
-          'ai', msgs
-        );
+        appendChatMsg(simResponse, 'ai', msgs);
         speakText(simResponse);
       } else {
         appendChatMsg(`❌ IBM watsonx.ai Studio API error: ${err.message}\n\nPlease check your credentials in ⚙️ Settings.`, 'ai', msgs);

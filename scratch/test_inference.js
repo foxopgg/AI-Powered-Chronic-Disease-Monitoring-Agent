@@ -35,7 +35,10 @@ if (!apiKey || !svcUrl || !projId) {
   process.exit(1);
 }
 
-model = model || 'ibm/granite-3-2-8b-instruct';
+model = 'ibm/granite-3-2-8b-instruct';
+apiKey = 'uw36wf5xACkL6JEi-9v29H-U0ko5Et28GZmnEUF7rHyt';
+projId = '5d7d0b01-f195-4b8c-ba3c-15a2264bc60a';
+svcUrl = 'https://eu-de.ml.cloud.ibm.com';
 
 console.log(`API Key: ${apiKey.slice(0, 5)}...${apiKey.slice(-5)}`);
 console.log(`Service URL: ${svcUrl}`);

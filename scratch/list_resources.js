@@ -28,6 +28,7 @@ if (!apiKey) {
   console.error('Error: IBM_API_KEY not found in .env');
   process.exit(1);
 }
+apiKey = '70AR2D3PftmSR3W0mggrEakWuINUAZNHi3Nr5RtbrCDd';
 
 async function getIamToken(key) {
   const tokenUrl = 'https://iam.cloud.ibm.com/identity/token';

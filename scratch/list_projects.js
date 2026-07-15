@@ -1,34 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const envPath = 'c:\\Users\\USER\\Documents\\GitHub\\AI-Powered-Chronic-Disease-Monitoring-Agent\\.env';
-console.log(`Reading .env from: ${envPath}`);
-
-let apiKey = '';
-try {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const lines = envContent.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const parts = trimmed.split('=');
-    if (parts.length >= 2) {
-      const key = parts[0].trim();
-      const val = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
-      if (key === 'IBM_API_KEY' || key === 'IBM_CLOUD_API_KEY') {
-        apiKey = val;
-      }
-    }
-  }
-} catch (e) {
-  console.error(`Failed to read .env: ${e.message}`);
-  process.exit(1);
-}
-
-if (!apiKey) {
-  console.error('Error: IBM_API_KEY not found in .env');
-  process.exit(1);
-}
+const apiKey = 'uw36wf5xACkL6JEi-9v29H-U0ko5Et28GZmnEUF7rHyt';
 
 async function getIamToken(key) {
   const tokenUrl = 'https://iam.cloud.ibm.com/identity/token';
@@ -39,60 +9,52 @@ async function getIamToken(key) {
   });
 
   if (!res.ok) {
-    throw new Error(`IAM token request failed with status ${res.status}: ${await res.text()}`);
+    throw new Error(`IAM token request failed: ${res.status} ${await res.text()}`);
   }
 
   const data = await res.json();
   return data.access_token;
 }
 
+async function listProjects(token, region) {
+  const url = `https://api.${region}.dataplatform.cloud.ibm.com/v2/projects`;
+  console.log(`\nListing projects in region "${region}" via: ${url}`);
+  
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!res.ok) {
+    console.error(`Failed to list projects in ${region}: ${res.status}`);
+    return;
+  }
+
+  const data = await res.json();
+  if (data.resources) {
+    console.log(`Found ${data.resources.length} projects in ${region}:`);
+    data.resources.forEach(p => {
+      console.log(`- Name: "${p.entity.name}"`);
+      console.log(`  ID: ${p.metadata.guid}`);
+      console.log(`  Created: ${p.metadata.created_at}`);
+      console.log(`  Storage Bucket: ${p.entity.storage?.properties?.bucket_name}`);
+      console.log('------------------------------------');
+    });
+  } else {
+    console.log(`No projects found or unexpected response:`, JSON.stringify(data, null, 2));
+  }
+}
+
 async function main() {
   try {
-    console.log('Fetching IAM Token...');
     const token = await getIamToken(apiKey);
-    console.log('IAM Token retrieved successfully.');
-
-    const endpoints = [
-      'https://api.dataplatform.cloud.ibm.com/v2/projects',
-      'https://api.us-south.dataplatform.cloud.ibm.com/v2/projects',
-      'https://api.eu-de.dataplatform.cloud.ibm.com/v2/projects',
-      'https://api.eu-gb.dataplatform.cloud.ibm.com/v2/projects',
-      'https://api.au-syd.dataplatform.cloud.ibm.com/v2/projects'
-    ];
-
-    for (const url of endpoints) {
-      console.log(`\nCalling REST API endpoint: ${url}`);
-      try {
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        console.log(`Response Status: ${res.status}`);
-        const responseText = await res.text();
-        
-        try {
-          const data = JSON.parse(responseText);
-          if (data.resources) {
-            console.log(`Found ${data.resources.length} projects:`);
-            data.resources.forEach(proj => {
-              console.log(`- Name: "${proj.entity.name}" | ID: ${proj.metadata.guid} | Created: ${proj.metadata.created_at}`);
-            });
-          } else {
-            console.log('Response JSON (no resources key):', JSON.stringify(data, null, 2));
-          }
-        } catch (e) {
-          console.log('Response text (could not parse as JSON):', responseText.slice(0, 1000));
-        }
-      } catch (err) {
-        console.error(`Request to ${url} failed:`, err.message);
-      }
-    }
-  } catch (error) {
-    console.error('Fatal error:', error);
+    await listProjects(token, 'eu-de');
+    await listProjects(token, 'eu-gb');
+  } catch (e) {
+    console.error('Fatal error:', e);
   }
 }
 

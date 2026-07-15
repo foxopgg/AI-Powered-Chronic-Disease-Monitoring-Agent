@@ -6,7 +6,7 @@ const fs = require('fs');
 const pdfParse = require('pdf-parse');
 
 // Load environment variables from .env if present
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 const PORT = process.env.PORT || 3000;

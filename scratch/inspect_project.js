@@ -1,5 +1,5 @@
-const apiKey = '70AR2D3PftmSR3W0mggrEakWuINUAZNHi3Nr5RtbrCDd';
-const projId = 'b7f98012-b8b3-42ff-bd5d-a74f6ffb469e';
+const apiKey = 'uw36wf5xACkL6JEi-9v29H-U0ko5Et28GZmnEUF7rHyt';
+const projId = 'c89cad83-028e-46da-8104-c2e1c97fa703';
 
 async function getIamToken(key) {
   const tokenUrl = 'https://iam.cloud.ibm.com/identity/token';
@@ -19,6 +19,7 @@ async function getIamToken(key) {
 
 async function inspectProject() {
   const urls = [
+    `https://api.eu-de.dataplatform.cloud.ibm.com/v2/projects/${projId}`,
     `https://api.eu-gb.dataplatform.cloud.ibm.com/v2/projects/${projId}`,
     `https://api.dataplatform.cloud.ibm.com/v2/projects/${projId}`
   ];

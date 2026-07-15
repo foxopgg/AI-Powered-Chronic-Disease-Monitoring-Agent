@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "1784090524083_nxq7r",
+    "patientId": 0,
+    "filename": "clinical_report_0_1784090517295.pdf",
+    "originalName": "Clinical Report — 15/7/2026.pdf",
+    "uploadDate": "2026-07-15T04:42:04.111Z",
+    "contentType": "application/pdf",
+    "size": 77173,
+    "source": "cos",
+    "url": "/api/reports/file/clinical_report_0_1784090517295.pdf",
+    "type": "clinical",
+    "extractedDetails": null
+  }
+]
